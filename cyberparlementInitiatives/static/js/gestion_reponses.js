@@ -12,12 +12,15 @@ function ajouterReponseButtonListeners() {
 function ajouterReponse(event) {
     let reponsesEditablesDiv = document.getElementById('reponsesEditables')
 
-    let reponses = document.querySelectorAll('button[id^="question-"]');
 
-    let nouvelleReponseId = reponses.length + 1
+    let lastReponse = reponsesEditablesDiv.lastChild
+
+    let lastReponseId = lastReponse.dataset.reponseId
+
+    let nouvelleReponseId = parseInt(lastReponseId) + 1
 
     let reponseHTML =
-        `<div class="row mt-2" id="reponse-gr-1">
+        `<div class="row mt-2" id="reponse-gr-1" data-reponse-id="${nouvelleReponseId}">
             <div class="input-group">
                <input class="form-control" type="text" id="reponse-${nouvelleReponseId}" name="reponse-${nouvelleReponseId}" value="Choix">
                <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="${nouvelleReponseId}" onclick="supprimerReponse(event)">
