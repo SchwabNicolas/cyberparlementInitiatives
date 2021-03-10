@@ -20,7 +20,7 @@
         </div>
         <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archivesTab">
             {% for initiative in initiatives_archive %}
-                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_en_cours_include.html' %}
+                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_archive.html' %}
             {% empty %}
                 <h5 class="blank">Aucune initiative n'est archivée.</h5>
             {% endfor %}
