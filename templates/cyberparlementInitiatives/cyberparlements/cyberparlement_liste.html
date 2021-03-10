@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Cyberparlements</h2>
+
+    {% for cyberparlement in cyberparlements %}
+        {% include 'cyberparlementInitiatives/cyberparlements/includes/cyberparlement_include.html' %}
+    {% empty %}
+        <h5>Il n'y a pas de cyberparlements.</h5>
+    {% endfor %}
+{% endblock %}

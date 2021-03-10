@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="nav flex-row nav-pills" id="pills-tab" aria-orientation="horizontal" role="tablist">
+        <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">En cours</a>
+        <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives">Archive</a>
+        {% if user in cyberparlement.cyberchanceliers.all %}
+            <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider">A valider</a>
+        {% endif %}
+    </div>
+    <div class="tab-content mt-3 w-100" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="enCours" role="tabpanel" aria-labelledby="enCoursTab">
+            {% for initiative in initiatives_en_cours %}
+                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_include.html' %}
+            {% empty %}
+                <h5 class="blank">Aucune initiative n'est en cours de scrutin.</h5>
+            {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archivesTab">
+            {% for initiative in initiatives_archive %}
+                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_include.html' %}
+            {% empty %}
+                <h5 class="blank">Aucune initiative n'est archivée.</h5>
+            {% endfor %}
+        </div>
+
+        {% if user in cyberparlement.cyberchanceliers.all %}
+            <div class="tab-pane fade" id="aValider" role="tabpanel" aria-labelledby="aValiderTab">
+                {% for initiative in initiatives_a_valider %}
+                    {% include 'cyberparlementInitiatives/initiatives/includes/initiative_a_valider_include.html' %}
+                {% empty %}
+                    <h5 class="blank">Aucune initiative n'est à valider.</h5>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

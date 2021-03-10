@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block head %}
+    <script src="{% static 'js/gestion_reponses.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>Proposer une initiative</h1>
+    <form method="POST">
+        {% include 'cyberparlementInitiatives/includes/form_include.html' %}
+
+        <div class="row mt-3">
+            <label>Réponses</label>
+        </div>
+        <div id="reponses">
+            <div id="reponsesEditables">
+                <div class="row mt-2" id="reponse-gr-1">
+                    <div class="input-group">
+                        <input class="form-control" type="text" id="reponse-1" name="reponse-1" value="Oui">
+                        <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="1">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row mt-2" id="reponse-gr-2">
+                    <div class="input-group">
+                        <input class="form-control" type="text" id="reponse-2" name="reponse-2" value="Non">
+                        <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="input-group">
+                    <input class="form-control disabled" type="text" id="reponse-blank" name="reponse-blank" value="Blanc" disabled>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="input-group">
+                    <button class="btn" type="button" id="ajouterReponseBtn"><i class="far fa-plus-square"></i> Ajouter une réponse</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons d-flex flex-row justify-content-end">
+            <button type="submit" class="btn btn-primary btn-lg mt-4">Proposer</button>
+        </div>
+    </form>
+{% endblock %}

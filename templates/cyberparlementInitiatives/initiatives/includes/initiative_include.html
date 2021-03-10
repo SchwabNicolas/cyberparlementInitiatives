@@ -1,0 +1,14 @@
+<div class="card mb-2">
+    <div class="card-body">
+        <h5 class="card-title">{{ initiative.nom }}</h5>
+        <p class="card-text">{{ initiative.description }}</p>
+
+        <div class="d-flex flex-row justify-content-end">
+            {% if initiative.statut == 'scrutin' %}
+                <a href="#" class="btn btn-primary">Voter</a>
+            {% elif initiative.statut == 'second_scrutin' %}
+                <a href="#" class="btn btn-primary">Voter pour le deuxième tour</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

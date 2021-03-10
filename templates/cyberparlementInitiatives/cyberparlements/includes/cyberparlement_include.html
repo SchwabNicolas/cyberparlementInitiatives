@@ -1,0 +1,25 @@
+<div class="card mb-2">
+    <div class="card-body">
+        <h5 class="card-title">{{ cyberparlement.nom }}</h5>
+        {% if cyberparlement.cyberchanceliers.all %}
+            <b>Cyberchanceliers</b>
+            <ul>
+                {% for cyberchancelier in cyberparlement.cyberchanceliers.all %}
+                    <li>{{ cyberchancelier }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="d-flex flex-row justify-content-end">
+            <a href="{% url 'initiative-list' id_cyberparlement=cyberparlement.id %}" class="btn btn-primary mr-2">Voir les initiatives</a>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <input type="hidden" value="{{ cyberparlement.id }}" name="idcyberparlement" id="idcyberparlement">
+                <button type="submit" class="btn btn-primary mr-2" value="becUser" id="becUser" name="becUser">Devenir user</button>
+                <button type="submit" class="btn btn-primary mr-2" value="becCyberchancelier" id="becCyberchancelier" name="becCyberchancelier">Devenir cyberchancelier</button>
+
+            </form>
+        </div>
+    </div>
+</div>

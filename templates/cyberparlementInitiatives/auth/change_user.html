@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Authentification</h2>
+    <form method="post">
+    {% csrf_token %}
+        <div class="row mt-3">
+            <label for="user">Utilisateur</label>
+            <div class="input-group">
+                <select id="user" name="user" class="form-control">
+                    {% for select_user in users %}
+                        <option value="{{ select_user.username }}">{{ select_user.prenom }} {{ select_user.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="buttons d-flex flex-row justify-content-end mt-3">
+            <button type="submit" name="logout" id="logout" value="logout" class="btn btn-danger mr-2">Se déconnecter</button>
+            <button type="submit" name="login" id="login" value="login" class="btn btn-primary">Se connecter</button>
+        </div>
+    </form>
+{% endblock %}
