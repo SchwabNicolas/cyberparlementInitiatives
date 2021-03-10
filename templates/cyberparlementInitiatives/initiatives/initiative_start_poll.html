@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block head %}
+    <script src="{% static 'js/gestion_reponses.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>Organiser un scrutin</h1>
+    <form method="POST">
+        {% include 'cyberparlementInitiatives/includes/form_include.html' %}
+
+        <div class="buttons d-flex flex-row justify-content-end">
+            <button type="submit" class="btn btn-primary btn-lg mt-4">Valider</button>
+        </div>
+    </form>
+{% endblock %}

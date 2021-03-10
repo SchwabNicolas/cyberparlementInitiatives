@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+    <h1>{{ initiative.nom }}</h1>
+    <h2>{{ initiative.cyberparlement.nom }}</h2>
+    <p>{{ initiative.description }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <h2>Voter</h2>
+        {% for choix_r in choix %}
+            <div class="form-check">
+                <input type="radio" id="reponse-{{ choix_r.id }}" name="reponse" value="{{ choix_r.id }}">
+                <label class="form-check-label" for="reponse-{{ choix_r.id }}">{{ choix_r.choix }}</label>
+            </div>
+        {% endfor %}
+        <div class="buttons d-flex flex-row justify-content-center">
+            <button type="submit" class="btn btn-primary btn-lg mt-4">Voter</button>
+        </div>
+    </form>
+{% endblock %}

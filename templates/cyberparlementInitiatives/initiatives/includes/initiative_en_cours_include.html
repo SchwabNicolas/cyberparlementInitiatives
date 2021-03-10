@@ -1,11 +1,10 @@
 <div class="card mb-2">
     <div class="card-body">
         <h5 class="card-title">{{ initiative.nom }}</h5>
-        <h6 class="card-subtitle">Proposé par {{ initiative.initiateur.prenom }} {{ initiative.initiateur.nom }}</h6>
         <p class="card-text">{{ initiative.description }}</p>
 
         <div class="d-flex flex-row justify-content-end">
-            <a href="{% url 'initiative-validate' id_initiative=initiative.id %}" class="btn btn-primary">Valider</a>
+            <a href="{% url 'initiative-vote-poll' pk=initiative.id %}" class="btn btn-primary">Voter</a>
         </div>
     </div>
 </div>

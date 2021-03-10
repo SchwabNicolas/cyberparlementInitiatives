@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block head %}
+    <script src="{% static 'js/gestion_reponses.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>Corriger une initiative</h1>
+    <form method="POST">
+        {% include 'cyberparlementInitiatives/includes/form_include.html' %}
+
+        <div class="row mt-3">
+            <label>Réponses</label>
+        </div>
+        {# Le spaceless est nécessaire pour que lastChild ne soit pas rempli par du texte #}
+        {% spaceless %}
+            <div id="reponses">
+                <div id="reponsesEditables">
+                    {% for choix_r in choix %}
+                        <div class="row mt-2" id="reponse-gr-{{ choix_r.id }}" data-reponse-id="{{ choix_r.id }}">
+                            <div class="input-group">
+                                <input class="form-control" type="text" id="reponse-{{ choix_r.id }}" name="reponse-{{ choix_r.id }}" value="{{ choix_r.choix }}">
+                                <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="{{ choix_r.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row mt-2">
+                    <div class="input-group">
+                        <input class="form-control disabled" type="text" id="reponse-blank" name="reponse-blank" value="Blanc" disabled>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="input-group">
+                        <button class="btn" type="button" id="ajouterReponseBtn"><i class="far fa-plus-square"></i> Ajouter une réponse</button>
+                    </div>
+                </div>
+            </div>
+        {% endspaceless %}
+
+        <div class="buttons d-flex flex-row justify-content-between">
+            <button type="submit" class="btn btn-danger btn-lg mt-4" value="delete" name="delete">Supprimer</button>
+            <button type="submit" class="btn btn-primary btn-lg mt-4">Valider</button>
+        </div>
+    </form>
+{% endblock %}

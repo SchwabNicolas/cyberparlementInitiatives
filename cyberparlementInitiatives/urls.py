@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from cyberparlementInitiatives.views import IndexView, InitiativeDetailView, InitiativeListView, InitiativePropositionView, UserCreateView, CyberparlementListView, UserLoginView
+from cyberparlementInitiatives.views import IndexView, InitiativeDetailView, InitiativeListView, InitiativePropositionView, UserCreateView, CyberparlementListView, UserLoginView, InitiativeValidationView, InitiativeStartPollView, InitiativePollVoteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +25,9 @@ urlpatterns = [
 
     path('initiatives/<int:id_cyberparlement>', InitiativeListView.as_view(), name='initiative-list'),
     path('initiative/propose/', InitiativePropositionView.as_view(), name='initiative-propose'),
+    path('initiative/validate/<int:id_initiative>', InitiativeValidationView.as_view(), name='initiative-validate'),
+    path('initiative/start-poll/<int:id_initiative>', InitiativeStartPollView.as_view(), name='initiative-start-poll'),
+    path('initiative/vote-poll/<int:pk>', InitiativePollVoteView.as_view(), name='initiative-vote-poll'),
     path('initiative/<int:id_cyberparlement>/<int:id_initiative>', InitiativeDetailView.as_view(), name='initiative-detail'),
 
     # Vues relatives à l'authentification -- à des fins de test

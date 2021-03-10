@@ -7,19 +7,20 @@
         <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives">Archive</a>
         {% if user in cyberparlement.cyberchanceliers.all %}
             <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider">A valider</a>
+            <a class="nav-link" id="aVenirTab" data-toggle="pill" href="#aVenir" role="tab" aria-controls="aVenir">A venir</a>
         {% endif %}
     </div>
     <div class="tab-content mt-3 w-100" id="v-pills-tabContent">
         <div class="tab-pane fade show active" id="enCours" role="tabpanel" aria-labelledby="enCoursTab">
             {% for initiative in initiatives_en_cours %}
-                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_include.html' %}
+                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_en_cours_include.html' %}
             {% empty %}
                 <h5 class="blank">Aucune initiative n'est en cours de scrutin.</h5>
             {% endfor %}
         </div>
         <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archivesTab">
             {% for initiative in initiatives_archive %}
-                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_include.html' %}
+                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_en_cours_include.html' %}
             {% empty %}
                 <h5 class="blank">Aucune initiative n'est archivée.</h5>
             {% endfor %}
@@ -31,6 +32,13 @@
                     {% include 'cyberparlementInitiatives/initiatives/includes/initiative_a_valider_include.html' %}
                 {% empty %}
                     <h5 class="blank">Aucune initiative n'est à valider.</h5>
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade show" id="aVenir" role="tabpanel" aria-labelledby="aVenirTab">
+                {% for initiative in initiatives_a_venir %}
+                    {% include 'cyberparlementInitiatives/initiatives/includes/initiative_a_venir_include.html' %}
+                {% empty %}
+                    <h5 class="blank">Aucune scrutin n'est à venir.</h5>
                 {% endfor %}
             </div>
         {% endif %}

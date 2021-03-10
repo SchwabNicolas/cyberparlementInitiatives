@@ -29,7 +29,7 @@ class Candidat(models.Model):
 
 
 class Choixinitiative(models.Model):
-    initiative = models.ForeignKey('Initiative', models.DO_NOTHING, db_column='idInitiative')  # Field name made lowercase.
+    initiative = models.ForeignKey('Initiative', models.CASCADE, db_column='idInitiative')  # Field name made lowercase.
     choix = models.CharField(db_column='Choix', max_length=45, blank=True, null=True)  # Field name made lowercase.
     ordre = models.IntegerField(db_column='Ordre', blank=True, null=True)  # Field name made lowercase.
 
@@ -129,10 +129,11 @@ class Initiative(models.Model):
     cyberparlement = models.ForeignKey(Cyberparlement, models.DO_NOTHING, db_column='idCP')
     nom = models.CharField(db_column='Nom', max_length=45, blank=True, null=True)
     description = models.CharField(db_column='Description', max_length=1000)
-    echeance = models.DateTimeField(db_column='Echeance', null=True, blank=True)
+    debut_scrutin = models.DateTimeField(db_column='DebutScrutin', null=True, blank=True)
+    fin_scrutin = models.DateTimeField(db_column='FinScrutin', null=True, blank=True)
     initiateur = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idInitiateur', blank=True, null=True)
     statut = models.CharField(default=STATUT_A_VALIDER, max_length=5, choices=STATUTS_INITIATIVE)
-    modevalidation = models.CharField(default=MODE_VALIDATION_AUCUN, max_length=5, choices=MODES_VALIDATION)
+    mode_validation = models.CharField(default=MODE_VALIDATION_AUCUN, max_length=5, choices=MODES_VALIDATION)
 
     class Meta:
         managed = True
