@@ -45,6 +45,8 @@ INSTALLED_APPS = [
 
     'widget_tweaks',
     'bootstrap_datepicker_plus',
+
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +143,13 @@ AUTH_USER_MODEL = 'cyberparlementInitiatives.Personne'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'mail.ceff.ch'
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 500,
+    'bulk': 10,
+    'orm': 'default'
+}

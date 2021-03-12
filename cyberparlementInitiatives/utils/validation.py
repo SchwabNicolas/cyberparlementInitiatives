@@ -3,6 +3,7 @@ import secrets
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django_q.tasks import async_task
 
 
 def generate_validation_token(length):
@@ -45,10 +46,10 @@ def send_validation_email(voteinitiative, initiative, request):
                                 },
                                 request=request)
 
-    send_mail(
-        subject='[Cyberparlement] Validation de votre vote',
-        message="template",
-        html_message=template,
-        from_email='noreply@cyberparlement.ch',
-        recipient_list=[request.user.email],
-    )
+    async_task('django.core.mail.send_mail',
+               subject='[Cyberparlement] Validation de votre vote',
+               message="template",
+               html_message=template,
+               from_email='noreply@cyberparlement.ch',
+               recipient_list=[request.user.email],
+               )

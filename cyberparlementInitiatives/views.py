@@ -2,7 +2,6 @@ import datetime
 
 from django.contrib.auth import login, logout
 from django.db.models import Q, Count
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, DetailView, FormView, ListView, CreateView
