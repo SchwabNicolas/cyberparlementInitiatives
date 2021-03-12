@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 
 from cyberparlementInitiatives.utils.auth import generate_unique_vanity
+from cyberparlementInitiatives.utils.validation import generate_validation_token
 
 
 class Candidat(models.Model):
@@ -238,9 +239,9 @@ class Statutpersonne(models.Model):
 
 
 class Voteelection(models.Model):
-    personne = models.ForeignKey(Personne, models.DO_NOTHING, db_column='idPersonne')  # Field name made lowercase.
-    candidat = models.ForeignKey(Candidat, models.DO_NOTHING, db_column='idCandidat', blank=True, null=True)  # Field name made lowercase.
-    timestamp = models.DateTimeField(db_column='Timestamp', blank=True, null=True)  # Field name made lowercase.
+    personne = models.ForeignKey(Personne, models.DO_NOTHING, db_column='idPersonne')
+    candidat = models.ForeignKey(Candidat, models.DO_NOTHING, db_column='idCandidat', blank=True, null=True)
+    timestamp = models.DateTimeField(db_column='Timestamp', blank=True, null=True)
 
     class Meta:
         managed = True
@@ -249,12 +250,33 @@ class Voteelection(models.Model):
 
 
 class Voteinitiative(models.Model):
-    personne = models.ForeignKey(Personne, models.DO_NOTHING, db_column='idPersonne')  # Field name made lowercase.
-    choixinitiative = models.ForeignKey(Choixinitiative, models.DO_NOTHING, db_column='idChoixInitiative', blank=True, null=True)  # Field name made lowercase.
-    timestamp = models.DateTimeField(db_column='Timestamp')  # Field name made lowercase.
-    initiative = models.ForeignKey(Initiative, models.DO_NOTHING, db_column='idInitiative')  # Field name made lowercase.
+    STATUT_VALIDATION_VALIDE = 'VAL'
+    STATUT_VALIDATION_NON_VALIDE = 'NVAL'
+
+    STATUTS_VALIDATION = [
+        (STATUT_VALIDATION_NON_VALIDE, 'Non validé'),
+        (STATUT_VALIDATION_VALIDE, 'Validé'),
+    ]
+
+    personne = models.ForeignKey(Personne, models.DO_NOTHING, db_column='idPersonne')
+    choixinitiative = models.ForeignKey(Choixinitiative, models.DO_NOTHING, db_column='idChoixInitiative', blank=True, null=True, related_name='choix_initiative')
+    timestamp = models.DateTimeField(db_column='Timestamp')
+    initiative = models.ForeignKey(Initiative, models.DO_NOTHING, db_column='idInitiative')
+    code_validation = models.CharField(max_length=5, db_column='CodeValidation', blank=True, null=True)
+    statut_validation = models.CharField(max_length=5, db_column='StatutValidation', default=STATUT_VALIDATION_NON_VALIDE)
 
     class Meta:
         managed = True
         db_table = 'voteinitiative'
         unique_together = (('personne', 'choixinitiative'),)
+
+
+def generate_validation_code(sender, instance, *args, **kwargs):
+    """
+    Fonction créant un code de validation cryptographiquement robuste à chaque vote.
+    """
+    if not instance.code_validation or instance.code_validation is None:
+        instance.code_validation = generate_validation_token(5)
+
+
+pre_save.connect(generate_validation_code, sender=Voteinitiative)  # Signal se déclenchant avant l'enregistrement dans la base de donnée

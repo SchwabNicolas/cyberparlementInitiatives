@@ -3,8 +3,18 @@
         <h5 class="card-title">{{ initiative.nom }}</h5>
         <p class="card-text">{{ initiative.description }}</p>
 
-        <div class="d-flex flex-row justify-content-end">
-            <a href="{% url 'initiative-vote-poll' pk=initiative.id %}" class="btn btn-primary">Voter</a>
-        </div>
+        {% if initiative.need_validation > 0 %}
+            <div class="d-flex flex-row justify-content-end">
+                <a href="{% url 'initiative-validate-poll-vote' pk=initiative.id %}" class="btn btn-info">Valider votre vote</a>
+            </div>
+        {% elif initiative.has_voted > 0 %}
+            <div class="d-flex flex-row justify-content-end">
+                <a href="#" class="btn btn-outline-success">A voté !</a>
+            </div>
+        {% elif initiative.has_voted == 0 and initiative.need_validation == 0 %}
+            <div class="d-flex flex-row justify-content-end">
+                <a href="{% url 'initiative-vote-poll' pk=initiative.id %}" class="btn btn-primary">Voter</a>
+            </div>
+        {% endif %}
     </div>
 </div>

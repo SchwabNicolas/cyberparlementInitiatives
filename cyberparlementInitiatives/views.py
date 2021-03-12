@@ -1,13 +1,15 @@
 import datetime
 
 from django.contrib.auth import login, logout
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, DetailView, FormView, ListView, CreateView
 
 from cyberparlementInitiatives.forms import InitiativePropositionForm, UserCreationForm, InitiativeStartPollForm
 from cyberparlementInitiatives.models import Initiative, Cyberparlement, Choixinitiative, Personne, Voteinitiative
+from cyberparlementInitiatives.utils.validation import validate_token, send_validation_email
 
 
 class IndexView(TemplateView):
@@ -35,13 +37,18 @@ class InitiativeListView(TemplateView):
         return self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_A_VALIDER))
 
     def get_initiatives_a_venir(self):
-        return self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()))
+        return self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__gt=datetime.datetime.now()))
 
     def get_initiatives_archive(self):
         return self.get_initiatives_par_cyberparlement().filter(Q(fin_scrutin__lt=datetime.datetime.now()))
 
     def get_initiatives_en_cours(self):
-        return self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()) & Q(fin_scrutin__gt=datetime.datetime.now()))
+        initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()) & Q(fin_scrutin__gt=datetime.datetime.now()))  # Récupère les initiatives en cours
+        need_validation = Count('voteinitiative', filter=~Q(mode_validation=Initiative.MODE_VALIDATION_AUCUN) & (Q(voteinitiative__statut_validation=Voteinitiative.STATUT_VALIDATION_NON_VALIDE) & Q(voteinitiative__personne=self.request.user)))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés
+        has_voted = Count('voteinitiative', filter=Q(voteinitiative__personne=self.request.user))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés
+        initiatives_en_cours = initiatives_en_cours.annotate(has_voted=has_voted)  # Applique l'agrégation de la requête précédente
+        initiatives_en_cours = initiatives_en_cours.annotate(need_validation=need_validation)  # Applique l'agrégation de la requête précédente
+        return initiatives_en_cours
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -50,6 +57,9 @@ class InitiativeListView(TemplateView):
         context['initiatives_archive'] = self.get_initiatives_archive()
         context['initiatives_a_valider'] = self.get_initiatives_a_valider()
         context['initiatives_a_venir'] = self.get_initiatives_a_venir()
+        context['need_validation'] = self.get_initiatives_en_cours().filter(Q(need_validation=1)).count()
+        context['MODE_VALIDATION_AUCUN'] = Initiative.MODE_VALIDATION_AUCUN
+        context['STATUT_VALIDATION_VALIDE'] = Voteinitiative.STATUT_VALIDATION_VALIDE
         return context
 
 
@@ -178,12 +188,18 @@ class InitiativePollVoteView(DetailView):
     def post(self, *args, **kwargs):
         if self.request.POST.get('reponse'):
             choix_initiative = Choixinitiative.objects.get(id=self.request.POST.get('reponse'))
-            Voteinitiative(
+            vote_initiative = Voteinitiative(
                 timestamp=datetime.datetime.now(),
                 initiative_id=self.get_object().id,
                 personne_id=self.request.user.id,
                 choixinitiative=choix_initiative
-            ).save()
+            )
+            vote_initiative.save()
+
+            if self.get_object().mode_validation == Initiative.MODE_VALIDATION_AUCUN:
+                vote_initiative.statut_validation = Voteinitiative.STATUT_VALIDATION_VALIDE
+            elif self.get_object().mode_validation == Initiative.MODE_VALIDATION_EMAIL:
+                send_validation_email(voteinitiative=vote_initiative, request=self.request, initiative=self.get_object())
 
         return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': self.get_object().cyberparlement.id}))
 
@@ -191,6 +207,45 @@ class InitiativePollVoteView(DetailView):
         context = super().get_context_data(**kwargs)
         context['choix'] = self.get_choix_initiative()
         return context
+
+
+class InitiativeValidatePollVoteView(DetailView):
+    model = Initiative
+    template_name = 'cyberparlementInitiatives/initiatives/initiative_validate_poll_vote.html'
+    context_object_name = 'initiative'
+
+    def get_validation_text(self):
+        if self.get_object().mode_validation == Initiative.MODE_VALIDATION_AUCUN:
+            return ""
+        elif self.get_object().mode_validation == Initiative.MODE_VALIDATION_EMAIL:
+            return "Un email vous a été envoyé."
+        elif self.get_object().mode_validation == Initiative.MODE_VALIDATION_SMS:
+            return "Un SMS vous a été envoyé."
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['validation_text'] = self.get_validation_text()
+        return context
+
+    def get_voteinitiative(self):
+        return Voteinitiative.objects.get(initiative=self.get_object(), personne=self.request.user)
+
+    def post(self, *args, **kwargs):
+        print(self.request.POST)
+        if self.request.POST.get('sendMail'):
+            vote_initiative = Voteinitiative.objects.get(personne=self.request.user, initiative=self.get_object())
+            send_validation_email(voteinitiative=vote_initiative, initiative=self.get_object(), request=self.request)
+        if self.request.POST.get('validationCode'):
+            validation_code = self.request.POST.get('validationCode')
+            is_valid = validate_token(validation_code=validation_code, voteinitiative=self.get_voteinitiative())
+            print(is_valid)
+            if is_valid:
+                choix_initiative = self.get_voteinitiative()
+                choix_initiative.statut_validation = Voteinitiative.STATUT_VALIDATION_VALIDE
+                choix_initiative.save()
+                cyberparlement_id = self.get_object().cyberparlement.id
+                return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': cyberparlement_id}))
+        return redirect(reverse_lazy('initiative-validate-poll-vote', kwargs={'pk': self.get_object().id}))
 
 
 # Vues relatives aux cyberparlements -- à des fins de test

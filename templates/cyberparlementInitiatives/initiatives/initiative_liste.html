@@ -3,7 +3,9 @@
 
 {% block content %}
     <div class="nav flex-row nav-pills" id="pills-tab" aria-orientation="horizontal" role="tablist">
-        <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">En cours</a>
+        <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">
+            En cours {% if need_validation > 0 %}<span class="badge badge-danger">{{ need_validation }}</span>{% endif %}
+        </a>
         <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives">Archive</a>
         {% if user in cyberparlement.cyberchanceliers.all %}
             <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider">A valider</a>
@@ -14,8 +16,6 @@
         <div class="tab-pane fade show active" id="enCours" role="tabpanel" aria-labelledby="enCoursTab">
             {% for initiative in initiatives_en_cours %}
                 {% include 'cyberparlementInitiatives/initiatives/includes/initiative_en_cours_include.html' %}
-            {% empty %}
-                <h5 class="blank">Aucune initiative n'est en cours de scrutin.</h5>
             {% endfor %}
         </div>
         <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archivesTab">

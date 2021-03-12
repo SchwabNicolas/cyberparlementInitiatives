@@ -3,7 +3,7 @@ import secrets
 
 def generate_vanity(min_length, max_length):
     """
-    Génère un jeton de vanité cryptographiquement solide.
+    Génère un jeton de vanité cryptographiquement robuste.
 
     Arguments nommés :
     min_length -- nombre de caractères minimum du jeton de vanité
@@ -21,7 +21,7 @@ def generate_vanity(min_length, max_length):
 
 def generate_unique_vanity(min_length, max_length, model):
     """
-    Génère un jeton de vanité unique et cryptographiquement solide.
+    Génère un jeton de vanité unique et cryptographiquement robuste.
 
     Arguments nommés :
     min_length -- nombre de caractères minimum du jeton de vanité

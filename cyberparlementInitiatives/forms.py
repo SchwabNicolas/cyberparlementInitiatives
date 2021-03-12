@@ -31,7 +31,7 @@ class InitiativeStartPollForm(ModelForm):
                                   label_suffix='',
                                   widget=DateTimePickerInput(format='%Y-%m-%d %H:%M'))
 
-    fin_scrutin = DateTimeField(label='Début du scrutin',
+    fin_scrutin = DateTimeField(label='Fin du scrutin',
                                 label_suffix='',
                                 widget=DateTimePickerInput(format='%Y-%m-%d %H:%M'))
 
