@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load extra_tags %}
+
+{% block content %}
+    <h1>{{ initiative.nom }}</h1>
+    <p>{{ initiative.description }}</p>
+
+    <h2>Résultats</h2>
+    <h3>Tour 1</h3>
+    <h4>{{ initiative.total_votes }} vote{% if initiative.total_votes > 1 %}s{% endif %}</h4>
+    <p>
+        Taux de participation : ???<br>
+        Du {{ initiative.debut_scrutin|date:"l j F Y à G:i" }}<br
+    >Au {{ initiative.fin_scrutin|date:"l j F Y à G:i" }}
+    </p>
+    <ul>
+        {% for choix in initiative.choix %}
+            {% if choix.is_winning %}
+                <li><b>{{ choix }} ({{ choix.percentage_vote|percentage }})</b></li>
+            {% else %}
+                <li>{{ choix }} ({{ choix.percentage_vote|percentage }})</li>
+            {% endif %}
+        {% endfor %}
+        <li>{{ initiative.blank_field }} ({{ initiative.blank_field.total_votes }} vote{% if initiative.blank_field.total_votes > 1 %}s{% endif %})</li>
+    </ul>
+    {% if initiative.need_another_turn and not initiative.is_parent %}
+        <a href="{% url 'initiative-create-second-round' id_initiative=initiative.id %}" class="btn btn-primary">Créer un second tour</a>
+    {% endif %}
+    {% if initiative.is_parent %}
+        {% for child in initiative.children %}
+            <h3>Tour {{ forloop.counter|add_one }}</h3>
+            <h4>{{ child.total_votes }} vote{% if child.total_votes > 1 %}s{% endif %}</h4>
+            <p>
+                Taux de participation : ???<br>
+                Du {{ child.debut_scrutin|date:"l j F Y à G:i" }}<br>
+                Au {{ child.fin_scrutin|date:"l j F Y à G:i" }}
+            </p>
+            <ul>
+                {% for choix in child.choix %}
+                    {% if choix.is_winning %}
+                        <li><b>{{ choix }} ({{ choix.percentage_vote|percentage }})</b></li>
+                    {% else %}
+                        <li>{{ choix }} ({{ choix.percentage_vote|percentage }})</li>
+                    {% endif %}
+                {% endfor %}
+                <li>{{ child.blank_field }} ({{ child.blank_field.total_votes }} vote{% if child.blank_field.total_votes > 1 %}s{% endif %})</li>
+            </ul>
+            {% if forloop.last %}
+                {% if child.need_another_turn and not child.is_parent %}
+                    <a href="{% url 'initiative-create-second-round' id_initiative=child.id %}" class="btn btn-primary">Créer un nouveau tour</a>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}

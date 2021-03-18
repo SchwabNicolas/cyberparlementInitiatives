@@ -12,12 +12,12 @@
         {% include 'cyberparlementInitiatives/includes/form_include.html' %}
         {# Le spaceless est nécessaire pour que lastChild ne soit pas rempli par du texte #}
         {% spaceless %}
-            <div class="row mt-3">
+            <div class="mt-3">
                 <label>Réponses</label>
             </div>
             <div id="reponses">
                 <div id="reponsesEditables">
-                    <div class="row mt-2" id="reponse-gr-1" data-reponse-id="1">
+                    <div class="mt-2" id="reponse-gr-1" data-reponse-id="1">
                         <div class="input-group">
                             <input class="form-control" type="text" id="reponse-1" name="reponse-1" value="Oui">
                             <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="1">
@@ -25,7 +25,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="row mt-2" id="reponse-gr-2" data-reponse-id="2">
+                    <div class="mt-2" id="reponse-gr-2" data-reponse-id="2">
                         <div class="input-group">
                             <input class="form-control" type="text" id="reponse-2" name="reponse-2" value="Non">
                             <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="2">
@@ -34,12 +34,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="mt-2">
                     <div class="input-group">
                         <input class="form-control disabled" type="text" id="reponse-blank" name="reponse-blank" value="Blanc" disabled>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="mt-2">
                     <div class="input-group">
                         <button class="btn" type="button" id="ajouterReponseBtn"><i class="far fa-plus-square"></i> Ajouter une réponse</button>
                     </div>

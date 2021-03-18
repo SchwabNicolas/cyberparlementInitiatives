@@ -8,6 +8,7 @@ from django.views.generic import TemplateView, DetailView, FormView, ListView, C
 
 from cyberparlementInitiatives.forms import InitiativePropositionForm, UserCreationForm, InitiativeStartPollForm
 from cyberparlementInitiatives.models import Initiative, Cyberparlement, Choixinitiative, Personne, Voteinitiative
+from cyberparlementInitiatives.utils.schedule import schedule_poll_start, schedule_poll_end
 from cyberparlementInitiatives.utils.validation import validate_token, send_validation_email
 
 
@@ -36,13 +37,14 @@ class InitiativeListView(TemplateView):
         return self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_A_VALIDER))
 
     def get_initiatives_a_venir(self):
-        return self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__gt=datetime.datetime.now()))
+        return self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_VALIDEE))
 
     def get_initiatives_archive(self):
-        return self.get_initiatives_par_cyberparlement().filter(Q(fin_scrutin__lt=datetime.datetime.now()))
+        return self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_SCRUTIN_TERMINE))
 
     def get_initiatives_en_cours(self):
-        initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()) & Q(fin_scrutin__gt=datetime.datetime.now()))  # Récupère les initiatives en cours
+        # initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()) & Q(fin_scrutin__gt=datetime.datetime.now()))  # Récupère les initiatives en cours
+        initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_EN_SCRUTIN))
         need_validation = Count('voteinitiative', filter=~Q(mode_validation=Initiative.MODE_VALIDATION_AUCUN) & (Q(voteinitiative__statut_validation=Voteinitiative.STATUT_VALIDATION_NON_VALIDE) & Q(voteinitiative__personne=self.request.user)))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés
         has_voted = Count('voteinitiative', filter=Q(voteinitiative__personne=self.request.user))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés
         initiatives_en_cours = initiatives_en_cours.annotate(has_voted=has_voted)  # Applique l'agrégation de la requête précédente
@@ -104,13 +106,11 @@ class InitiativeValidationView(FormView):
         return Initiative.objects.get(id=self.kwargs.get('id_initiative'))
 
     def get_choix_initiative(self):
-        return Choixinitiative.objects.filter(initiative=self.get_initiative()).order_by('ordre')
+        blank_choice = Choixinitiative.objects.filter(initiative=self.get_initiative(), choix=Choixinitiative.BLANK_CHOICE)
+        if blank_choice:
+            Choixinitiative.objects.filter(initiative=self.get_initiative(), choix=Choixinitiative.BLANK_CHOICE).delete()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = self.form_class(instance=self.get_initiative())
-        context['choix'] = self.get_choix_initiative()
-        return context
+        return Choixinitiative.objects.filter(initiative=self.get_initiative()).order_by('ordre')
 
     def post(self, request, *args, **kwargs):
         if self.request.POST.get('delete'):
@@ -132,30 +132,71 @@ class InitiativeValidationView(FormView):
 
             self.get_choix_initiative().delete()
 
-            choices_count = 0
+            index = 0
             for key in self.request.POST:
                 split_key = key.split('-')
                 if len(split_key) > 1 and split_key[0] == 'reponse':
                     try:
-                        choices_count += 1
-                        int(split_key[1])
+                        index += 1
                         Choixinitiative(
                             initiative=initiative,
-                            ordre=split_key[1],
+                            ordre=index,
                             choix=self.request.POST[key],
                         ).save()
                     except ValueError:
                         pass
 
-            blank_order = choices_count + 1
-
-            Choixinitiative(
-                initiative=initiative,
-                ordre=blank_order,
-                choix="Blanc",
-            ).save()
-
             return redirect(reverse_lazy('initiative-start-poll', kwargs={"id_initiative": self.get_initiative().id}))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.form_class(instance=self.get_initiative())
+        context['choix'] = self.get_choix_initiative()
+        return context
+
+
+class InitiativeCreateSecondRoundView(FormView):
+    form_class = InitiativeStartPollForm
+    template_name = 'cyberparlementInitiatives/initiatives/initiative_create_second_round.html'
+
+    def get_parent_initiative(self):
+        return Initiative.objects.get(id=self.kwargs.get('id_initiative'))
+
+    def get_placeholder_initiative(self):
+        initiative = self.get_parent_initiative()
+        initiative.id = None
+        return initiative
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['initiative'] = self.get_placeholder_initiative()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        initiative = self.get_placeholder_initiative()
+        initiative.debut_scrutin = self.request.POST.get('debut_scrutin')
+        initiative.fin_scrutin = self.request.POST.get('fin_scrutin')
+        initiative.mode_validation = self.request.POST.get('mode_validation')
+        if self.get_parent_initiative().parent is not None:
+            initiative.parent = self.get_parent_initiative().parent
+        else:
+            initiative.parent = self.get_parent_initiative()
+        initiative.statut = Initiative.STATUT_VALIDEE
+        initiative.save()
+
+        parent_choixinitiatives = Choixinitiative.objects.filter(initiative=self.get_parent_initiative())
+        for choixinitiative in parent_choixinitiatives:
+            if choixinitiative.choix != Choixinitiative.BLANK_CHOICE and not choixinitiative.is_last:
+                choixinitiative_placeholder = choixinitiative
+                choixinitiative_placeholder.initiative = initiative
+                choixinitiative_placeholder.id = None
+                choixinitiative.save()
+
+        schedule_poll_start(initiative.id)
+        schedule_poll_end(initiative.id)
+
+        cyberparlement_id = initiative.cyberparlement.id
+        return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': cyberparlement_id}))
 
 
 class InitiativeStartPollView(FormView):
@@ -172,8 +213,16 @@ class InitiativeStartPollView(FormView):
         initiative.mode_validation = self.request.POST.get('mode_validation')
         initiative.save()
 
+        schedule_poll_start(self.get_initiative().id)
+        schedule_poll_end(self.get_initiative().id)
+
         cyberparlement_id = self.get_initiative().cyberparlement.id
         return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': cyberparlement_id}))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['initiative'] = self.get_initiative()
+        return context
 
 
 class InitiativePollVoteView(DetailView):
@@ -200,11 +249,24 @@ class InitiativePollVoteView(DetailView):
             elif self.get_object().mode_validation == Initiative.MODE_VALIDATION_EMAIL:
                 send_validation_email(voteinitiative=vote_initiative, request=self.request, initiative=self.get_object())
 
-        return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': self.get_object().cyberparlement.id}))
+        if self.get_object().mode_validation == Initiative.MODE_VALIDATION_AUCUN:
+            return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': self.get_object().cyberparlement.id}))
+        else:
+            return redirect(reverse_lazy('initiative-validate-poll-vote', kwargs={'pk': self.get_object().id}))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['choix'] = self.get_choix_initiative()
+        return context
+
+
+class InitiativePollDetailView(DetailView):
+    template_name = 'cyberparlementInitiatives/initiatives/initiative_poll_detail.html'
+    model = Initiative
+    context_object_name = 'initiative'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 

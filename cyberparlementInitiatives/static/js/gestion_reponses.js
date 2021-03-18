@@ -20,7 +20,7 @@ function ajouterReponse(event) {
     let nouvelleReponseId = parseInt(lastReponseId) + 1
 
     let reponseHTML =
-        `<div class="row mt-2" id="reponse-gr-${nouvelleReponseId}" data-reponse-id="${nouvelleReponseId}">
+        `<div class="mt-2" id="reponse-gr-${nouvelleReponseId}" data-reponse-id="${nouvelleReponseId}">
             <div class="input-group">
                <input class="form-control" type="text" id="reponse-${nouvelleReponseId}" name="reponse-${nouvelleReponseId}" value="Choix">
                <button type="button" class="btn btn-danger input-group-append delete-reponse-btn" data-reponse-id="${nouvelleReponseId}" onclick="supprimerReponse(event)">

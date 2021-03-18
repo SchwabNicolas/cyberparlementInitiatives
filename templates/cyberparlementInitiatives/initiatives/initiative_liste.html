@@ -2,25 +2,40 @@
 {% load static %}
 
 {% block content %}
-    <div class="nav flex-row nav-pills" id="pills-tab" aria-orientation="horizontal" role="tablist">
+    <div class="nav flex-row nav-pills d-none d-md-flex" id="pills-tab" aria-orientation="horizontal" role="tablist">
         <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">
-            En cours {% if need_validation > 0 %}<span class="badge badge-danger">{{ need_validation }}</span>{% endif %}
+            <i class="fas fa-person-booth"></i> En cours {% if need_validation > 0 %}<span class="badge badge-danger">{{ need_validation }}</span>{% endif %}
         </a>
-        <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives">Archive</a>
+        <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives"><i class="fas fa-archive"></i> Archives</a>
         {% if user in cyberparlement.cyberchanceliers.all %}
-            <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider">A valider</a>
-            <a class="nav-link" id="aVenirTab" data-toggle="pill" href="#aVenir" role="tab" aria-controls="aVenir">A venir</a>
+            <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider"><i class="fas fa-gavel"></i> A valider</a>
+            <a class="nav-link" id="aVenirTab" data-toggle="pill" href="#aVenir" role="tab" aria-controls="aVenir"><i class="fas fa-meteor"></i> A venir</a>
+        {% endif %}
+    </div>
+
+    <div class="nav flex-column nav-pills d-flex d-md-none" id="pills-tab" aria-orientation="vertical" role="tablist">
+        <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">
+            <i class="fas fa-person-booth"></i> En cours {% if need_validation > 0 %}<span class="badge badge-danger">{{ need_validation }}</span>{% endif %}
+        </a>
+        <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives"><i class="fas fa-archive"></i> Archives</a>
+        {% if user in cyberparlement.cyberchanceliers.all %}
+            <a class="nav-link" id="aValiderTab" data-toggle="pill" href="#aValider" role="tab" aria-controls="aValider"><i class="fas fa-gavel"></i> A valider</a>
+            <a class="nav-link" id="aVenirTab" data-toggle="pill" href="#aVenir" role="tab" aria-controls="aVenir"><i class="fas fa-meteor"></i> A venir</a>
         {% endif %}
     </div>
     <div class="tab-content mt-3 w-100" id="v-pills-tabContent">
         <div class="tab-pane fade show active" id="enCours" role="tabpanel" aria-labelledby="enCoursTab">
             {% for initiative in initiatives_en_cours %}
                 {% include 'cyberparlementInitiatives/initiatives/includes/initiative_en_cours_include.html' %}
+            {% empty %}
+                <h5 class="blank">Aucune initiative n'est en cours de scrutin.</h5>
             {% endfor %}
         </div>
         <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archivesTab">
             {% for initiative in initiatives_archive %}
-                {% include 'cyberparlementInitiatives/initiatives/includes/initiative_archive.html' %}
+                {% if not initiative.parent %}
+                    {% include 'cyberparlementInitiatives/initiatives/includes/initiative_archive.html' %}
+                {% endif %}
             {% empty %}
                 <h5 class="blank">Aucune initiative n'est archivée.</h5>
             {% endfor %}

@@ -1,0 +1,18 @@
+@import "bootstrap_override";
+
+.process-flow {
+  .nav-link:not(:first-child)::before {
+    display: block;
+    position: absolute;
+    content: '';
+    margin-left: -28px;
+    background-image: url('../svg/chevron.svg');
+    background-size: 28px 28px;
+    height: 28px;
+    width: 28px;
+  }
+
+  .active {
+    font-weight: bold;
+  }
+}

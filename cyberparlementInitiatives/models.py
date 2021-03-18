@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.auth.models import AbstractUser, User
 from django.db import models
+from django.db.models import Q, Max
 from django.db.models.signals import pre_save
 
 from cyberparlementInitiatives.utils.auth import generate_unique_vanity
@@ -29,22 +30,6 @@ class Candidat(models.Model):
         return f"{self.personne.nom} {self.personne.prenom} pour {self.election.sujet}"
 
 
-class Choixinitiative(models.Model):
-    initiative = models.ForeignKey('Initiative', models.CASCADE, db_column='idInitiative')  # Field name made lowercase.
-    choix = models.CharField(db_column='Choix', max_length=45, blank=True, null=True)  # Field name made lowercase.
-    ordre = models.IntegerField(db_column='Ordre', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = True
-        db_table = 'choixinitiative'
-
-    def __unicode__(self):
-        return self.choix
-
-    def __str__(self):
-        return self.choix
-
-
 class Cyberparlement(models.Model):
     nom = models.CharField(db_column='Nom', max_length=45)  # Field name made lowercase.
     description = models.CharField(db_column='Description', max_length=200, blank=True, null=True)  # Field name made lowercase.
@@ -53,8 +38,9 @@ class Cyberparlement(models.Model):
     cpparent = models.ForeignKey('self', models.DO_NOTHING, db_column='CPParent', blank=True, null=True)  # Field name made lowercase.
 
     # Important !
-    # Champ ajouté afin de faire fonctionner le projet de TPI. Absent dans le projet final et remplacé par une méthode.
+    # Champs ajoutés afin de faire fonctionner le projet de TPI. Absent dans le projet final et remplacé par une méthode.
     cyberchanceliers = models.ManyToManyField('Personne', verbose_name="Cyberchanceliers", related_name='cyberchanceliers', related_query_name='cyberchancelier')
+    membres = models.ManyToManyField('Personne', verbose_name="Membres", related_name='membres', related_query_name='membre')
 
     class Meta:
         managed = True
@@ -110,17 +96,23 @@ class Initiative(models.Model):
     # Statuts
     STATUT_A_VALIDER = 'AVAL'
     STATUT_VALIDEE = 'VAL'
+    STATUT_EN_SCRUTIN = 'ENS'
+    STATUT_SCRUTIN_TERMINE = 'TER'
+    STATUT_SECOND_TOUR = '2TR'
 
     STATUTS_INITIATIVE = [
         (STATUT_A_VALIDER, 'A valider'),
         (STATUT_VALIDEE, 'Validée'),
+        (STATUT_EN_SCRUTIN, 'En scrutin'),
+        (STATUT_SECOND_TOUR, 'Nécessite un second tour'),
+        (STATUT_SCRUTIN_TERMINE, 'Scrutin terminé'),
     ]
 
+    # Modes de validation
     MODE_VALIDATION_SMS = 'sms'
     MODE_VALIDATION_EMAIL = 'email'
     MODE_VALIDATION_AUCUN = 'aucun'
 
-    # Modes de validation
     MODES_VALIDATION = [
         (MODE_VALIDATION_AUCUN, 'Aucun'),
         (MODE_VALIDATION_SMS, 'SMS'),
@@ -128,13 +120,14 @@ class Initiative(models.Model):
     ]
 
     cyberparlement = models.ForeignKey(Cyberparlement, models.DO_NOTHING, db_column='idCP')
-    nom = models.CharField(db_column='Nom', max_length=45, blank=True, null=True)
     description = models.CharField(db_column='Description', max_length=1000)
+    nom = models.CharField(db_column='Nom', max_length=45, blank=True, null=True)
     debut_scrutin = models.DateTimeField(db_column='DebutScrutin', null=True, blank=True)
     fin_scrutin = models.DateTimeField(db_column='FinScrutin', null=True, blank=True)
     initiateur = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idInitiateur', blank=True, null=True)
     statut = models.CharField(default=STATUT_A_VALIDER, max_length=5, choices=STATUTS_INITIATIVE)
     mode_validation = models.CharField(default=MODE_VALIDATION_AUCUN, max_length=5, choices=MODES_VALIDATION)
+    parent = models.ForeignKey('self', models.DO_NOTHING, db_column='idParent', blank=True, null=True)
 
     class Meta:
         managed = True
@@ -145,6 +138,175 @@ class Initiative(models.Model):
 
     def __str__(self):
         return self.nom
+
+    @property
+    def is_parent(self):
+        return Initiative.objects.filter(Q(parent_id=self.id)).count() > 0
+
+    @property
+    def blank_field(self):
+        return Choixinitiative.objects.get(choix=Choixinitiative.BLANK_CHOICE, initiative_id=self.id)
+
+    @property
+    def total_votes(self):
+        return Voteinitiative.objects.filter(Q(initiative_id=self.id)).count()
+
+    @property
+    def total_validated_votes(self):
+        if self.mode_validation == self.MODE_VALIDATION_AUCUN:
+            return Voteinitiative.objects.filter(Q(initiative_id=self.id)).count()
+        else:
+            return Voteinitiative.objects.filter(Q(initiative_id=self.id) & Q(statut_validation=Voteinitiative.STATUT_VALIDATION_VALIDE)).count()
+
+    @property
+    def max_vote_count(self):
+        choixinitiatives = self.choix
+        maximum = 0
+        for choixinitiative in choixinitiatives:
+            vote_count = choixinitiative.vote_count
+            if vote_count > maximum:
+                maximum = vote_count
+
+        return maximum
+
+    @property
+    def min_vote_count(self):
+        choixinitiatives = self.choix
+
+        minimum = self.max_vote_count
+        for choixinitiative in choixinitiatives:
+            vote_count = choixinitiative.vote_count
+            if vote_count < minimum:
+                minimum = vote_count
+
+        return minimum
+
+    @property
+    def vote_count(self):
+        if self.mode_validation == self.MODE_VALIDATION_AUCUN:
+            return Voteinitiative.objects.filter(Q(initiative_id=self.id) & ~Q(choixinitiative=self.blank_field)).count()
+        else:
+            return Voteinitiative.objects.filter(Q(initiative_id=self.id) & Q(statut_validation=Voteinitiative.STATUT_VALIDATION_VALIDE) & ~Q(choixinitiative=self.blank_field)).count()
+
+    @property
+    def need_another_turn(self):
+        votes = self._count_votes()
+
+        if len(votes) <= 2:
+            return False
+
+        max_times = 0
+        maximum = max(votes.values())
+        for vote in votes:
+            if votes[vote] == maximum:
+                max_times += 1
+
+        if max_times > 1:
+            return True
+        return False
+
+    @property
+    def children(self):
+        return Initiative.objects.filter(parent_id=self.id)
+
+    @property
+    def choix(self):
+        return Choixinitiative.objects.filter(Q(initiative_id=self.id) & ~Q(choix=self.blank_field))
+
+    def _count_votes(self):
+        choixinitiatives = Choixinitiative.objects.filter(initiative=self)
+
+        votes = {}
+
+        for choixinitiative in choixinitiatives:
+            if choixinitiative.choix != Choixinitiative.BLANK_CHOICE:
+                votes_choixinitiative = choixinitiative.vote_count
+                votes[choixinitiative.id] = votes_choixinitiative
+
+        return votes
+
+
+class Choixinitiative(models.Model):
+    BLANK_CHOICE = 'Blanc'
+
+    initiative = models.ForeignKey('Initiative', models.CASCADE, db_column='idInitiative')
+    choix = models.CharField(db_column='Choix', max_length=45, blank=True, null=True)
+    ordre = models.IntegerField(db_column='Ordre', blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'choixinitiative'
+
+    def __unicode__(self):
+        return self.choix
+
+    def __str__(self):
+        return self.choix
+
+    @property
+    def vote_count(self):
+        if self.initiative.mode_validation == Initiative.MODE_VALIDATION_AUCUN:
+            return Voteinitiative.objects.filter(Q(initiative=self.initiative) & Q(choixinitiative=self)).count()
+        else:
+            return Voteinitiative.objects.filter(Q(initiative=self.initiative) & Q(choixinitiative=self) & Q(statut_validation=Voteinitiative.STATUT_VALIDATION_VALIDE)).count()
+
+    @property
+    def total_votes(self):
+        return Voteinitiative.objects.filter(Q(initiative=self.initiative) & Q(choixinitiative=self)).count()
+
+    @property
+    def percentage_vote(self):
+        if self.vote_count == 0:
+            return 0
+        total_votes_initiative = self.initiative.vote_count
+        return self.vote_count / total_votes_initiative
+
+    @property
+    def is_winning(self):
+        if self.vote_count == self.initiative.max_vote_count:
+            return True
+        return False
+
+    @property
+    def is_last(self):
+        if self.is_winning:
+            return False
+        if self.vote_count == self.initiative.min_vote_count:
+            return True
+        return False
+
+
+class Voteinitiative(models.Model):
+    STATUT_VALIDATION_VALIDE = 'VAL'
+    STATUT_VALIDATION_NON_VALIDE = 'NVAL'
+
+    STATUTS_VALIDATION = [
+        (STATUT_VALIDATION_NON_VALIDE, 'Non validé'),
+        (STATUT_VALIDATION_VALIDE, 'Validé'),
+    ]
+
+    personne = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idPersonne')
+    choixinitiative = models.ForeignKey(Choixinitiative, models.DO_NOTHING, db_column='idChoixInitiative', blank=True, null=True, related_name='choix_initiative')
+    timestamp = models.DateTimeField(db_column='Timestamp')
+    initiative = models.ForeignKey(Initiative, models.DO_NOTHING, db_column='idInitiative')
+    code_validation = models.CharField(max_length=5, db_column='CodeValidation', blank=True, null=True)
+    statut_validation = models.CharField(max_length=5, db_column='StatutValidation', default=STATUT_VALIDATION_NON_VALIDE)
+
+    class Meta:
+        managed = True
+        db_table = 'voteinitiative'
+        unique_together = (('personne', 'choixinitiative'),)
+
+
+def generate_validation_code(sender, instance, *args, **kwargs):
+    """
+    Fonction créant un code de validation cryptographiquement robuste à chaque vote.
+    """
+    if not instance.code_validation or instance.code_validation is None:
+        instance.code_validation = generate_validation_token(5)
+
+
+pre_save.connect(generate_validation_code, sender=Voteinitiative)  # Signal se déclenchant avant l'enregistrement dans la base de donnée
 
 
 class Membrecp(models.Model):
@@ -247,36 +409,3 @@ class Voteelection(models.Model):
         managed = True
         db_table = 'voteelection'
         unique_together = (('id', 'personne'),)
-
-
-class Voteinitiative(models.Model):
-    STATUT_VALIDATION_VALIDE = 'VAL'
-    STATUT_VALIDATION_NON_VALIDE = 'NVAL'
-
-    STATUTS_VALIDATION = [
-        (STATUT_VALIDATION_NON_VALIDE, 'Non validé'),
-        (STATUT_VALIDATION_VALIDE, 'Validé'),
-    ]
-
-    personne = models.ForeignKey(Personne, models.DO_NOTHING, db_column='idPersonne')
-    choixinitiative = models.ForeignKey(Choixinitiative, models.DO_NOTHING, db_column='idChoixInitiative', blank=True, null=True, related_name='choix_initiative')
-    timestamp = models.DateTimeField(db_column='Timestamp')
-    initiative = models.ForeignKey(Initiative, models.DO_NOTHING, db_column='idInitiative')
-    code_validation = models.CharField(max_length=5, db_column='CodeValidation', blank=True, null=True)
-    statut_validation = models.CharField(max_length=5, db_column='StatutValidation', default=STATUT_VALIDATION_NON_VALIDE)
-
-    class Meta:
-        managed = True
-        db_table = 'voteinitiative'
-        unique_together = (('personne', 'choixinitiative'),)
-
-
-def generate_validation_code(sender, instance, *args, **kwargs):
-    """
-    Fonction créant un code de validation cryptographiquement robuste à chaque vote.
-    """
-    if not instance.code_validation or instance.code_validation is None:
-        instance.code_validation = generate_validation_token(5)
-
-
-pre_save.connect(generate_validation_code, sender=Voteinitiative)  # Signal se déclenchant avant l'enregistrement dans la base de donnée

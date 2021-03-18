@@ -1,19 +1,19 @@
 <div class="card mb-2">
     <div class="card-body">
-        <h5 class="card-title">{{ initiative.nom }}</h5>
+        <h5 class="card-title">{{ initiative.nom }} {% if initiative.parent %}<i class="fas fa-redo"></i>{% endif %}</h5>
         <p class="card-text">{{ initiative.description }}</p>
 
         {% if initiative.need_validation > 0 %}
             <div class="d-flex flex-row justify-content-end">
-                <a href="{% url 'initiative-validate-poll-vote' pk=initiative.id %}" class="btn btn-info">Valider votre vote</a>
+                <a href="{% url 'initiative-validate-poll-vote' pk=initiative.id %}" class="btn btn-info"><i class="fas fa-envelope-open-text"></i> Valider votre vote <span class="badge badge-danger">!</span></a>
             </div>
         {% elif initiative.has_voted > 0 %}
             <div class="d-flex flex-row justify-content-end">
-                <a href="#" class="btn btn-outline-success">A voté !</a>
+                <a href="#" class="btn btn-outline-success">A voté ! <i class="fas fa-check"></i></a>
             </div>
         {% elif initiative.has_voted == 0 and initiative.need_validation == 0 %}
             <div class="d-flex flex-row justify-content-end">
-                <a href="{% url 'initiative-vote-poll' pk=initiative.id %}" class="btn btn-primary">Voter</a>
+                <a href="{% url 'initiative-vote-poll' pk=initiative.id %}" class="btn btn-primary">Voter <i class="fas fa-vote-yea"></i></a>
             </div>
         {% endif %}
     </div>

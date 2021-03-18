@@ -8,7 +8,7 @@
         <p class="card-text">{{ initiative.description }}</p>
 
         <div class="d-flex flex-row justify-content-end">
-            <a href="{% url 'initiative-start-poll' id_initiative=initiative.id %}" class="btn btn-primary">Modifier le scrutin</a>
+            <a href="{% url 'initiative-validate' id_initiative=initiative.id %}" class="btn btn-primary">Modifier le scrutin</a>
         </div>
     </div>
 </div>

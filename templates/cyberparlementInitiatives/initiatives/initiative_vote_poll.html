@@ -3,6 +3,13 @@
 {% load widget_tweaks %}
 
 {% block content %}
+    {% if not initiative.mode_validation == initiative.MODE_VALIDATION_AUCUN %}
+        <nav class="d-flex process-flow">
+            <a href="#" class="nav-link active">Vote</a>
+            <a href="#" class="nav-link disabled">Validation du vote</a>
+        </nav>
+    {% endif %}
+
     <h1>{{ initiative.nom }}</h1>
     <h2>{{ initiative.cyberparlement.nom }}</h2>
     <p>{{ initiative.description }}</p>

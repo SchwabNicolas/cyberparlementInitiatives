@@ -1,4 +1,4 @@
-<div class="card mb-2">
+<div class="card mb-2 shadow-sm">
     <div class="card-body">
         <h5 class="card-title">{{ cyberparlement.nom }}</h5>
         {% if cyberparlement.cyberchanceliers.all %}
@@ -9,17 +9,22 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <div class="d-flex flex-row justify-content-end">
-            <a href="{% url 'initiative-list' id_cyberparlement=cyberparlement.id %}" class="btn btn-primary mr-2">Voir les initiatives</a>
+        <form method="post">
+            {% csrf_token %}
 
-            <form method="post">
-                {% csrf_token %}
+            <input type="hidden" value="{{ cyberparlement.id }}" name="idcyberparlement" id="idcyberparlement">
 
-                <input type="hidden" value="{{ cyberparlement.id }}" name="idcyberparlement" id="idcyberparlement">
-                <button type="submit" class="btn btn-primary mr-2" value="becUser" id="becUser" name="becUser">Devenir user</button>
-                <button type="submit" class="btn btn-primary mr-2" value="becCyberchancelier" id="becCyberchancelier" name="becCyberchancelier">Devenir cyberchancelier</button>
+            <div class="d-grid gap-2 col-6 mx-auto d-md-none">
+                <a href="{% url 'initiative-list' id_cyberparlement=cyberparlement.id %}" class="btn btn-primary btn-sm w-100">Initiatives</a>
+                <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" value="becUser" id="becUser" name="becUser">Utilisateur</button>
+                <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" value="becCyberchancelier" id="becCyberchancelier" name="becCyberchancelier">Cyberchancelier</button>
+            </div>
 
-            </form>
-        </div>
+            <div class="d-none gap-2 d-md-flex justify-content-end">
+                <a href="{% url 'initiative-list' id_cyberparlement=cyberparlement.id %}" class="btn btn-primary">Initiatives</a>
+                <button type="submit" class="btn btn-primary ml-2" value="becUser" id="becUser" name="becUser">Utilisateur</button>
+                <button type="submit" class="btn btn-primary ml-2" value="becCyberchancelier" id="becCyberchancelier" name="becCyberchancelier">Cyberchancelier</button>
+            </div>
+        </form>
     </div>
 </div>

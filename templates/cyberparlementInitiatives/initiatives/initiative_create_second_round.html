@@ -2,16 +2,8 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% block head %}
-    <script src="{% static 'js/gestion_reponses.js' %}"></script>
-{% endblock %}
-
 {% block content %}
-    <nav class="d-flex process-flow">
-        <a href="{% url 'initiative-validate' id_initiative=initiative.id %}" class="nav-link">Corriger</a>
-        <a href="#" class="nav-link active">Scrutin</a>
-    </nav>
-
+    <h1>Second tour</h1>
     <form method="POST">
         {% include 'cyberparlementInitiatives/includes/form_include.html' %}
 
