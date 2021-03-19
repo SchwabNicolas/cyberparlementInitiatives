@@ -12,7 +12,6 @@ function ajouterReponseButtonListeners() {
 function ajouterReponse(event) {
     let reponsesEditablesDiv = document.getElementById('reponsesEditables')
 
-
     let lastReponse = reponsesEditablesDiv.lastChild
 
     let lastReponseId = lastReponse.dataset.reponseId

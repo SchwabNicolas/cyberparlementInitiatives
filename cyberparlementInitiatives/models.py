@@ -145,7 +145,7 @@ class Initiative(models.Model):
 
     @property
     def blank_field(self):
-        return Choixinitiative.objects.get(choix=Choixinitiative.BLANK_CHOICE, initiative_id=self.id)
+        return Choixinitiative.objects.filter(choix=Choixinitiative.BLANK_CHOICE, initiative_id=self.id)[0]
 
     @property
     def total_votes(self):

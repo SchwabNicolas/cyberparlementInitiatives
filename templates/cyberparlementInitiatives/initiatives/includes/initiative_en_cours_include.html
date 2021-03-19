@@ -1,7 +1,7 @@
 <div class="card mb-2 shadow-sm">
     <div class="card-body">
         <h5 class="card-title">{{ initiative.nom }} {% if initiative.parent %}<i class="fas fa-redo"></i>{% endif %}</h5>
-        <p class="card-text">{{ initiative.description }}</p>
+        <p class="card-text text-justify">{{ initiative.description }}</p>
 
         {% if initiative.need_validation > 0 %}
             <div class="d-flex flex-row justify-content-end">

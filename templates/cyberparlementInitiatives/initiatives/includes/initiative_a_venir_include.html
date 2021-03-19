@@ -5,7 +5,7 @@
         <p class="card-text">
             <small>Du {{ initiative.debut_scrutin }} au {{ initiative.fin_scrutin }}</small>
         </p>
-        <p class="card-text">{{ initiative.description }}</p>
+        <p class="card-text text-justify">{{ initiative.description }}</p>
 
         <div class="d-flex flex-row justify-content-end">
             <a href="{% url 'initiative-validate' id_initiative=initiative.id %}" class="btn btn-primary">Modifier le scrutin</a>

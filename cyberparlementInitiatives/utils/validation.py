@@ -50,6 +50,6 @@ def send_validation_email(voteinitiative, initiative, request):
                subject='[Cyberparlement] Validation de votre vote',
                message="template",
                html_message=template,
-               from_email='noa.devanthery@ceff.ch',
+               from_email='no-replay@cyberparlement.ch',
                recipient_list=[request.user.email],
                )

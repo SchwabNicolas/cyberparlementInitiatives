@@ -43,7 +43,6 @@ class InitiativeListView(TemplateView):
         return self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_SCRUTIN_TERMINE))
 
     def get_initiatives_en_cours(self):
-        # initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(debut_scrutin__lt=datetime.datetime.now()) & Q(fin_scrutin__gt=datetime.datetime.now()))  # Récupère les initiatives en cours
         initiatives_en_cours = self.get_initiatives_par_cyberparlement().filter(Q(statut=Initiative.STATUT_EN_SCRUTIN))
         need_validation = Count('voteinitiative', filter=~Q(mode_validation=Initiative.MODE_VALIDATION_AUCUN) & (Q(voteinitiative__statut_validation=Voteinitiative.STATUT_VALIDATION_NON_VALIDE) & Q(voteinitiative__personne=self.request.user)))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés
         has_voted = Count('voteinitiative', filter=Q(voteinitiative__personne=self.request.user))  # Compte les votes de l'utilisateur actuel qui ne sont pas validés

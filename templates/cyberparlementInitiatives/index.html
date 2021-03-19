@@ -1,5 +1,50 @@
 {% extends 'cyberparlementInitiatives/../base.html' %}
 
 {% block content %}
-    <h1>CyberParlement Initiatives</h1>
+    <h2>Fonctionnement</h2>
+    <h3>Processus</h3>
+    <nav class="flex-row process d-none d-md-flex">
+        <a class="process-item" href="{% url 'initiative-propose' %}">Proposition</a>
+        <span class="process-item">Validation par un cyberchancelier</span>
+        <span class="process-item">Organisation du scrutin</span>
+        <span class="process-item">Scrutin</span>
+        <span class="process-item">Résultats</span>
+    </nav>
+
+    <nav class="flex-column process d-flex d-md-none">
+        <a class="process-item" href="{% url 'initiative-propose' %}">Proposition</a>
+        <span class="process-item">Validation par un cyberchancelier</span>
+        <span class="process-item">Organisation du scrutin</span>
+        <span class="process-item">Scrutin</span>
+        <span class="process-item">Résultats</span>
+    </nav>
+    <h3>Valider votre vote</h3>
+    <p class="text-justify">Après votre vote, il est possible que l'on vous demande de le valider par email ou par SMS. Pour se faire, rendez-vous sur le service de messagerie.</p>
+    <p class="text-justify">Il faut alors recopier le code à 5 chiffres qui est fourni dans le message sur la page de validation. Si vous ne l'avez pas reçu, vous pouvez le renvoyer à l'aide d'un bouton prévu à cet effet.</p>
+    <b>Exemple d'email</b>
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <span>noreply<span>&#64;</span>cyberparlement.ch</span>
+            <h4>[Cyberparlement] Validation de votre vote</h4>
+        </div>
+        <div class="card-body">
+            <p>
+                <small>Ceci est un email automatiquement généré par le système du cyberparlement.</small><br>
+                <small>Si vous ne savez pas d'où provient cet email, veuillez le supprimer.</small>
+            </p>
+            {% if user.is_authenticated %}
+            <h2>Bonjour {{ user.prenom }} {{ user.nom }}</h2>
+            {% else %}
+            <h2>Bonjour Prénom Nom</h2>
+            {% endif %}
+            <p>Veuillez valider votre vote à l'aide du code suivant : <b>XXXXX</b></p>
+            <p>
+                <a href="#">Aller vers la page de validation &#10132;</a>
+            </p>
+            <p>
+                Cordialement,<br>
+                l'équipe du cyberparlement
+            </p>
+        </div>
+    </div>
 {% endblock %}

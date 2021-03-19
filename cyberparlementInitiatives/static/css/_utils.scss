@@ -16,3 +16,51 @@
     font-weight: bold;
   }
 }
+
+.process-item {
+  padding: 0.75em;
+}
+
+.process.flex-row {
+  .process-item:not(:first-child)::before {
+    display: block;
+    position: absolute;
+    content: '';
+    margin-left: -28px;
+    background-image: url('../svg/chevron.svg');
+    background-size: 28px 28px;
+    height: 28px;
+    width: 28px;
+  }
+}
+
+.process.flex-column {
+  justify-content: center;
+  align-items: center;
+
+  .process-item {
+    width: 100%;
+    text-align: center;
+  }
+
+  .process-item:not(:first-child)::before {
+    text-align: center;
+    display: block;
+    position: absolute;
+    content: '';
+    transform: rotate(90deg);
+    margin: -28px auto;
+    background-image: url('../svg/chevron.svg');
+    background-size: 28px 28px;
+    height: 28px;
+    width: 28px;
+    left: calc(50% - 14px);
+  }
+
+}
+
+.process {
+  .active {
+    font-weight: bold;
+  }
+}
