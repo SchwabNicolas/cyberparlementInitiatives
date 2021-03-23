@@ -16,12 +16,6 @@ class IndexView(TemplateView):
     template_name = 'cyberparlementInitiatives/index.html'
 
 
-class InitiativeDetailView(DetailView):
-    model = Initiative
-    context_object_name = 'initiative'
-    template_name = 'cyberparlementInitiatives/initiatives/initiative_detail.html'
-
-
 class InitiativeListView(TemplateView):
     model = Initiative
     context_object_name = 'initiatives'
@@ -124,7 +118,6 @@ class InitiativeValidationView(FormView):
                 cyberparlement=cyberparlement,
                 nom=self.request.POST.get('nom'),
                 description=self.request.POST.get('description'),
-                statut=Initiative.STATUT_VALIDEE,
                 initiateur=self.request.user,
             )
             initiative.save()
@@ -210,6 +203,7 @@ class InitiativeStartPollView(FormView):
         initiative.debut_scrutin = self.request.POST.get('debut_scrutin')
         initiative.fin_scrutin = self.request.POST.get('fin_scrutin')
         initiative.mode_validation = self.request.POST.get('mode_validation')
+        initiative.statut = Initiative.STATUT_VALIDEE
         initiative.save()
 
         schedule_poll_start(self.get_initiative().id)

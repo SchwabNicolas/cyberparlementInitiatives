@@ -3,14 +3,13 @@
 
 {% block content %}
     <h1>{{ initiative.nom }}</h1>
-    <p>{{ initiative.description }}</p>
+    <p class="text-justify">{{ initiative.description }}</p>
 
     <div class="card shadow-sm">
         <h3 class="card-header">Tour 1</h3>
         <div class="card-body">
             <h4 class="card-title">{{ initiative.total_votes }} vote{% if initiative.total_votes > 1 %}s{% endif %}</h4>
             <p class="card-text">
-                Taux de participation : ???<br>
                 Du {{ initiative.debut_scrutin|date:"l j F Y à G:i" }}<br>
                 Au {{ initiative.fin_scrutin|date:"l j F Y à G:i" }}
             </p>
@@ -26,8 +25,8 @@
             </ul>
         </div>
         {% if initiative.need_another_turn and not initiative.is_parent and user in initiative.cyberparlement.cyberchanceliers.all %}
-            <div class="card-footer">
-                <a href="{% url 'initiative-create-second-round' id_initiative=initiative.id %}" class="btn btn-primary">Créer un second tour</a>
+            <div class="card-footer d-print-none">
+                <a href="{% url 'initiative-create-new-round' id_initiative=initiative.id %}" class="btn btn-primary">Créer un second tour</a>
             </div>
         {% endif %}
     </div>
@@ -38,7 +37,6 @@
                 <div class="card-body">
                     <h4 class="card-title">{{ child.total_votes }} vote{% if child.total_votes > 1 %}s{% endif %}</h4>
                     <p class="card-text">
-                        Taux de participation : ???<br>
                         Du {{ child.debut_scrutin|date:"l j F Y à G:i" }}<br>
                         Au {{ child.fin_scrutin|date:"l j F Y à G:i" }}
                     </p>
@@ -55,8 +53,8 @@
                 </div>
                 {% if forloop.last %}
                     {% if child.need_another_turn and not child.is_parent and user in initiative.cyberparlement.cyberchanceliers.all %}
-                        <div class="card-footer">
-                            <a href="{% url 'initiative-create-second-round' id_initiative=child.id %}" class="btn btn-primary">Créer un nouveau tour</a>
+                        <div class="card-footer d-print-none">
+                            <a href="{% url 'initiative-create-new-round' id_initiative=child.id %}" class="btn btn-primary">Créer un nouveau tour</a>
                         </div>
                     {% endif %}
                 {% endif %}

@@ -9,7 +9,7 @@
             </div>
         {% elif initiative.has_voted > 0 %}
             <div class="d-flex flex-row justify-content-end">
-                <a href="#" class="btn btn-outline-success">A voté ! <i class="fas fa-check"></i></a>
+                <a href="#" class="btn btn-outline-success disabled" disabled>A voté ! <i class="fas fa-check"></i></a>
             </div>
         {% elif initiative.has_voted == 0 and initiative.need_validation == 0 %}
             <div class="d-flex flex-row justify-content-end">
