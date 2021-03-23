@@ -51,9 +51,7 @@ class InitiativeListView(TemplateView):
         context['initiatives_archive'] = self.get_initiatives_archive()
         context['initiatives_a_valider'] = self.get_initiatives_a_valider()
         context['initiatives_a_venir'] = self.get_initiatives_a_venir()
-        context['need_validation'] = self.get_initiatives_en_cours().filter(Q(need_validation=1)).count()
-        context['MODE_VALIDATION_AUCUN'] = Initiative.MODE_VALIDATION_AUCUN
-        context['STATUT_VALIDATION_VALIDE'] = Voteinitiative.STATUT_VALIDATION_VALIDE
+        context['need_vote_validation'] = self.get_initiatives_en_cours().filter(Q(need_validation=1)).count()
         return context
 
 

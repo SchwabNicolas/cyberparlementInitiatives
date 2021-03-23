@@ -7,7 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.auth.models import AbstractUser, User
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Q
 from django.db.models.signals import pre_save
 
 from cyberparlementInitiatives.utils.auth import generate_unique_vanity
@@ -40,7 +40,6 @@ class Cyberparlement(models.Model):
     # Important !
     # Champs ajoutés afin de faire fonctionner le projet de TPI. Absent dans le projet final et remplacé par une méthode.
     cyberchanceliers = models.ManyToManyField('Personne', verbose_name="Cyberchanceliers", related_name='cyberchanceliers', related_query_name='cyberchancelier')
-    membres = models.ManyToManyField('Personne', verbose_name="Membres", related_name='membres', related_query_name='membre')
 
     class Meta:
         managed = True
@@ -104,7 +103,7 @@ class Initiative(models.Model):
         (STATUT_A_VALIDER, 'A valider'),
         (STATUT_VALIDEE, 'Validée'),
         (STATUT_EN_SCRUTIN, 'En scrutin'),
-        (STATUT_SECOND_TOUR, 'Nécessite un second tour'),
+        (STATUT_SECOND_TOUR, 'En second tour'),
         (STATUT_SCRUTIN_TERMINE, 'Scrutin terminé'),
     ]
 
