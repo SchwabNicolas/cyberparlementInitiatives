@@ -6,6 +6,11 @@ from cyberparlementInitiatives.models import Initiative, Choixinitiative
 
 
 def open_poll(initiative_id):
+    """
+    Débute un scrutin.
+    :param initiative_id: id de l'initiative
+    """
+
     initiative = Initiative.objects.get(id=initiative_id)
     initiative.statut = Initiative.STATUT_EN_SCRUTIN
     initiative.save()
@@ -22,6 +27,11 @@ def open_poll(initiative_id):
 
 
 def schedule_poll_start(initiative_id):
+    """
+    Planifie une tâche pour débuter un scrutin.
+    :param initiative_id: id de l'initiative
+    """
+
     initiative = Initiative.objects.get(id=initiative_id)
     debut_scrutin = initiative.debut_scrutin
     name = f'start-poll-{initiative_id}'
@@ -41,6 +51,11 @@ def schedule_poll_start(initiative_id):
 
 
 def close_poll(initiative_id):
+    """
+    Ferme le scrutin d'une initiative.
+    :param initiative_id: id de l'initiative
+    """
+
     initiative = Initiative.objects.get(id=initiative_id)
     initiative.statut = Initiative.STATUT_SCRUTIN_TERMINE
     if initiative.parent:
@@ -49,6 +64,11 @@ def close_poll(initiative_id):
 
 
 def schedule_poll_end(initiative_id):
+    """
+    Planifie une tâche pour la fermer un scrutin.
+    :param initiative_id: id de l'initiative
+    """
+
     initiative = Initiative.objects.get(id=initiative_id)
     fin_scrutin = initiative.fin_scrutin
     name = f'end-poll-{initiative_id}'

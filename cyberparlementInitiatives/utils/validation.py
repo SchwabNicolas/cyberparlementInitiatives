@@ -1,6 +1,5 @@
 import secrets
 
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django_q.tasks import async_task
@@ -50,6 +49,6 @@ def send_validation_email(voteinitiative, initiative, request):
                subject='[Cyberparlement] Validation de votre vote',
                message="template",
                html_message=template,
-               from_email='no-replay@cyberparlement.ch',
+               from_email='no-reply@cyberparlement.ch',
                recipient_list=[request.user.email],
                )

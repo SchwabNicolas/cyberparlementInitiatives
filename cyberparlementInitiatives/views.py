@@ -299,6 +299,8 @@ class InitiativeCreateSecondRoundView(FormView):
         schedule_poll_end(initiative.id)
 
         cyberparlement_id = initiative.cyberparlement.id
+
+        messages.success(self.request, f'Le scrutin débutera le {initiative.debut_scrutin} et finira le {initiative.fin_scrutin}')
         return redirect(reverse_lazy('initiative-list', kwargs={'id_cyberparlement': cyberparlement_id}))
 
     def get_context_data(self, **kwargs):
