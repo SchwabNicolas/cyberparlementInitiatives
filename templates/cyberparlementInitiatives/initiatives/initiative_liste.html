@@ -5,7 +5,7 @@
     {% with initiatives_a_valider.count as pending_validation %}
     <div class="nav flex-row nav-pills d-none d-md-flex" id="pills-tab" aria-orientation="horizontal" role="tablist">
         <a class="nav-link active" id="enCoursTab" data-toggle="pill" href="#enCours" role="tab" aria-controls="enCours" aria-selected="true">
-            <i class="fas fa-person-booth"></i> En cours {% if need_validation > 0 %}<span class="badge badge-danger">{{ need_vote_validation }}</span>{% endif %}
+            <i class="fas fa-person-booth"></i> En cours {% if need_vote_validation > 0 %}<span class="badge badge-danger">{{ need_vote_validation }}</span>{% endif %}
         </a>
         <a class="nav-link" id="archivesTab" data-toggle="pill" href="#archives" role="tab" aria-controls="archives"><i class="fas fa-archive"></i> Archives</a>
         {% if user in cyberparlement.cyberchanceliers.all %}

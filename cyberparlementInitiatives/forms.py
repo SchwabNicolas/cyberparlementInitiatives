@@ -5,6 +5,10 @@ from cyberparlementInitiatives.models import Initiative, Personne
 
 
 class InitiativePropositionForm(ModelForm):
+    """
+    Formulaire de proposition d'initiative.
+    """
+
     nom = CharField(
         label='Nom de l\'initiative',
         label_suffix='',
@@ -27,6 +31,10 @@ class InitiativePropositionForm(ModelForm):
 
 
 class InitiativeStartPollForm(ModelForm):
+    """
+    Formulaire d'organisation de scrutin.
+    """
+
     debut_scrutin = DateTimeField(label='Début du scrutin',
                                   label_suffix='',
                                   widget=DateTimePickerInput(format='%Y-%m-%d %H:%M'))
@@ -44,7 +52,7 @@ class InitiativeStartPollForm(ModelForm):
         ]
 
 
-# Formulaires d'authentification (pour tester)
+# Formulaire d'authentification -- à des fins de test
 class UserCreationForm(ModelForm):
     class Meta:
         model = Personne

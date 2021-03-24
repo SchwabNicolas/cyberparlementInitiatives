@@ -1,14 +1,22 @@
+/*
+    Fonctions utilitaires permettant d'ajouter et de supprimer des réponses sur les formulaires d'initiatives.
+    Dépendances : aucune
+ */
+
+// Fonction appelée au chargement de la page
 document.addEventListener("DOMContentLoaded", function (event) {
     ajouterReponseButtonListeners()
     supprimerReponseButtonListeners()
 });
 
+// Fonction ajoutant les EventListeners aux boutons d'ajout des réponses
 function ajouterReponseButtonListeners() {
     let button = document.getElementById('ajouterReponseBtn')
 
     button.addEventListener('click', ajouterReponse)
 }
 
+// Fonction ajoutant une réponse
 function ajouterReponse(event) {
     let reponsesEditablesDiv = document.getElementById('reponsesEditables')
 
@@ -33,6 +41,7 @@ function ajouterReponse(event) {
     reponsesEditablesDiv.appendChild(doc.body.firstChild)
 }
 
+// Fonction ajoutant les EventListeners sur les boutons de suppression de réponse
 function supprimerReponseButtonListeners() {
     let buttons = document.getElementsByClassName('delete-reponse-btn')
 
@@ -41,6 +50,7 @@ function supprimerReponseButtonListeners() {
     }
 }
 
+// Fonction supprimant une réponse
 function supprimerReponse(event) {
     let button = event.currentTarget
     let id = button.dataset.reponseId

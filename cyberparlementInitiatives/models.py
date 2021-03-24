@@ -92,6 +92,18 @@ class Genrepersonne(models.Model):
 
 
 class Initiative(models.Model):
+    """
+    Modèle représentant une initiative.
+
+    **Références :**
+
+    :model:`cyberparlementInitiatives.Cyberparlement`
+
+    :model:`cyberparlementInitiatives.Initiative`
+
+    :model:`cyberparlementInitiatives.Personne`
+    """
+
     # Statuts
     STATUT_A_VALIDER = 'AVAL'
     STATUT_VALIDEE = 'VAL'
@@ -119,14 +131,14 @@ class Initiative(models.Model):
     ]
 
     cyberparlement = models.ForeignKey(Cyberparlement, models.DO_NOTHING, db_column='idCP')
-    description = models.CharField(db_column='Description', max_length=1000)
-    nom = models.CharField(db_column='Nom', max_length=45, blank=True, null=True)
-    debut_scrutin = models.DateTimeField(db_column='DebutScrutin', null=True, blank=True)
-    fin_scrutin = models.DateTimeField(db_column='FinScrutin', null=True, blank=True)
-    initiateur = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idInitiateur', blank=True, null=True)
-    statut = models.CharField(default=STATUT_A_VALIDER, max_length=5, choices=STATUTS_INITIATIVE)
-    mode_validation = models.CharField(default=MODE_VALIDATION_AUCUN, max_length=5, choices=MODES_VALIDATION)
-    parent = models.ForeignKey('self', models.DO_NOTHING, db_column='idParent', blank=True, null=True)
+    description = models.CharField(db_column='Description', max_length=1000, verbose_name='description de l\'initiative')
+    nom = models.CharField(db_column='Nom', max_length=45, blank=True, null=True, verbose_name='nom de l\'initiative')
+    debut_scrutin = models.DateTimeField(db_column='DebutScrutin', null=True, blank=True, verbose_name='date et heure de début du scrutin')
+    fin_scrutin = models.DateTimeField(db_column='FinScrutin', null=True, blank=True, verbose_name='date et heure de fin du scrutin')
+    initiateur = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idInitiateur', blank=True, null=True, verbose_name='personne initiatrice')
+    statut = models.CharField(default=STATUT_A_VALIDER, max_length=5, choices=STATUTS_INITIATIVE, verbose_name='statut de l\'initiative')
+    mode_validation = models.CharField(default=MODE_VALIDATION_AUCUN, max_length=5, choices=MODES_VALIDATION, verbose_name='mode de validation des votes')
+    parent = models.ForeignKey('self', models.DO_NOTHING, db_column='idParent', blank=True, null=True, verbose_name='initiative parente')
 
     class Meta:
         managed = True
@@ -140,18 +152,35 @@ class Initiative(models.Model):
 
     @property
     def is_parent(self):
+        """
+        *Propriété* :
+        l'initiative a-t-elle un parent ?
+        """
         return Initiative.objects.filter(Q(parent_id=self.id)).count() > 0
 
     @property
     def blank_field(self):
+        """
+        *Propriété* :
+        champ de vote blanc.
+        inconsistant avant l'organisation du scrutin !
+        """
         return Choixinitiative.objects.filter(choix=Choixinitiative.BLANK_CHOICE, initiative_id=self.id)[0]
 
     @property
     def total_votes(self):
+        """
+        *Propriété* :
+        nombre total de votes sur l'initiative.
+        """
         return Voteinitiative.objects.filter(Q(initiative_id=self.id)).count()
 
     @property
     def total_validated_votes(self):
+        """
+        *Propriété* :
+        nombre total de votes validés, incluant les votes blancs.
+        """
         if self.mode_validation == self.MODE_VALIDATION_AUCUN:
             return Voteinitiative.objects.filter(Q(initiative_id=self.id)).count()
         else:
@@ -159,6 +188,11 @@ class Initiative(models.Model):
 
     @property
     def max_vote_count(self):
+        """
+        *Propriété* :
+        nombre maximum de votes sur un choix de l'initiative.
+        """
+
         choixinitiatives = self.choix
         maximum = 0
         for choixinitiative in choixinitiatives:
@@ -170,6 +204,11 @@ class Initiative(models.Model):
 
     @property
     def min_vote_count(self):
+        """
+        *Propriété* :
+        nombre minimal de votes sur un choix de l'initiative.
+        """
+
         choixinitiatives = self.choix
 
         minimum = self.max_vote_count
@@ -182,6 +221,11 @@ class Initiative(models.Model):
 
     @property
     def vote_count(self):
+        """
+        *Propriété* :
+        compte des votes
+        """
+
         if self.mode_validation == self.MODE_VALIDATION_AUCUN:
             return Voteinitiative.objects.filter(Q(initiative_id=self.id) & ~Q(choixinitiative=self.blank_field)).count()
         else:
@@ -189,6 +233,11 @@ class Initiative(models.Model):
 
     @property
     def need_another_turn(self):
+        """
+        *Propriété* :
+        l'initiative nécessite-t-elle un nouveau tour ?
+        """
+
         votes = self._count_votes()
 
         if len(votes) <= 2:
@@ -206,13 +255,27 @@ class Initiative(models.Model):
 
     @property
     def children(self):
+        """
+        *Propriété* :
+        enfants de l'initiative.
+        """
+
         return Initiative.objects.filter(parent_id=self.id)
 
     @property
     def choix(self):
+        """
+        *Propriété* :
+        choix de l'initiative
+        """
+
         return Choixinitiative.objects.filter(Q(initiative_id=self.id) & ~Q(choix=self.blank_field))
 
     def _count_votes(self):
+        """
+        compte de tous les votes dans un dictionnaire.
+        """
+
         choixinitiatives = Choixinitiative.objects.filter(initiative=self)
 
         votes = {}
@@ -226,6 +289,14 @@ class Initiative(models.Model):
 
 
 class Choixinitiative(models.Model):
+    """
+    Modèle représentant un choix proposé pour une :cyberparlementInitiatives.Initiative:.
+
+    **Références :**
+
+    :model:`cyberparlementInitiatives.Initiative`
+    """
+
     BLANK_CHOICE = 'Blanc'
 
     initiative = models.ForeignKey('Initiative', models.CASCADE, db_column='idInitiative')
@@ -244,6 +315,11 @@ class Choixinitiative(models.Model):
 
     @property
     def vote_count(self):
+        """
+        *Propriété* :
+        compte des votes sur le choix.
+        """
+
         if self.initiative.mode_validation == Initiative.MODE_VALIDATION_AUCUN:
             return Voteinitiative.objects.filter(Q(initiative=self.initiative) & Q(choixinitiative=self)).count()
         else:
@@ -251,10 +327,19 @@ class Choixinitiative(models.Model):
 
     @property
     def total_votes(self):
+        """
+        *Propriété* :
+        nombre total de votes, incluant les votes blancs.
+        """
         return Voteinitiative.objects.filter(Q(initiative=self.initiative) & Q(choixinitiative=self)).count()
 
     @property
     def percentage_vote(self):
+        """
+        *Propriété* :
+        pourcentage des suffrages
+        """
+
         if self.vote_count == 0:
             return 0
         total_votes_initiative = self.initiative.vote_count
@@ -262,12 +347,23 @@ class Choixinitiative(models.Model):
 
     @property
     def is_winning(self):
+        """
+        *Propriété* :
+        le choix a-t-il obtenu le plus de suffrages sur l'initiative ?
+        :return: vrai si le choix a obtenu le plus de suffrages sur l'initiative
+        """
+
         if self.vote_count == self.initiative.max_vote_count:
             return True
         return False
 
     @property
     def is_last(self):
+        """
+        *Propriété* :
+        le choix a-t-il obtenu le moins de suffrages sur l'initiative ?
+        """
+
         if self.is_winning:
             return False
         if self.vote_count == self.initiative.min_vote_count:
@@ -276,6 +372,15 @@ class Choixinitiative(models.Model):
 
 
 class Voteinitiative(models.Model):
+    """
+    Modèle représentant un vote de :cyberparlementInitiatives.Personne: proposé pour une :cyberparlementInitiatives.Initiative:.
+
+    **Références :**
+    :model:`cyberparlementInitiatives.Personne`
+    :model:`cyberparlementInitiatives.Initiative`
+    :model:`cyberparlementInitiatives.Choixinitiative`
+    """
+
     STATUT_VALIDATION_VALIDE = 'VAL'
     STATUT_VALIDATION_NON_VALIDE = 'NVAL'
 
@@ -286,10 +391,10 @@ class Voteinitiative(models.Model):
 
     personne = models.ForeignKey('Personne', models.DO_NOTHING, db_column='idPersonne')
     choixinitiative = models.ForeignKey(Choixinitiative, models.DO_NOTHING, db_column='idChoixInitiative', blank=True, null=True, related_name='choix_initiative')
-    timestamp = models.DateTimeField(db_column='Timestamp')
+    timestamp = models.DateTimeField(db_column='Timestamp', verbose_name='date et heure du vote')
     initiative = models.ForeignKey(Initiative, models.DO_NOTHING, db_column='idInitiative')
-    code_validation = models.CharField(max_length=5, db_column='CodeValidation', blank=True, null=True)
-    statut_validation = models.CharField(max_length=5, db_column='StatutValidation', default=STATUT_VALIDATION_NON_VALIDE)
+    code_validation = models.CharField(max_length=5, db_column='CodeValidation', blank=True, null=True, verbose_name='code de validation')
+    statut_validation = models.CharField(max_length=5, db_column='StatutValidation', default=STATUT_VALIDATION_NON_VALIDE, verbose_name='statut de validation')
 
     class Meta:
         managed = True
@@ -299,7 +404,7 @@ class Voteinitiative(models.Model):
 
 def generate_validation_code(sender, instance, *args, **kwargs):
     """
-    Fonction créant un code de validation cryptographiquement robuste à chaque vote.
+    Fonction générant un code de validation cryptographiquement robuste à chaque vote.
     """
     if not instance.code_validation or instance.code_validation is None:
         instance.code_validation = generate_validation_token(5)

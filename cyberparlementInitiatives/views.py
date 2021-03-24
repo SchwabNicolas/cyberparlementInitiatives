@@ -12,13 +12,67 @@ from cyberparlementInitiatives.utils.schedule import schedule_poll_start, schedu
 from cyberparlementInitiatives.utils.validation import validate_token, send_validation_email
 
 
+# Vue d'index -- à des fins de debug
 class IndexView(TemplateView):
+    """
+    Vue d'index.
+
+    **Template**
+    :template:'cyberparlementInitiatives/index.html'
+
+    *Contexte*
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+    """
+
     template_name = 'cyberparlementInitiatives/index.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Cyberparlement Initiatives - Index'
+        context['description'] = 'Index de Cyberparlement Initiatives'
+        return context
 
+
+# Vues des initiatives
 class InitiativeListView(TemplateView):
+    """
+    Vue de la liste des initiatives par cyberparlement.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    ``cyberparlement``
+        Cyberparlement
+
+    ``initiatives_en_cours``
+        Initiatives en cours du cyberparlement
+
+    ``initiatives_archive``
+        Initiatives dont le scrutin est terminé du cyberparlement
+
+    ``initiatives_a_valider``
+        Initiatives à valider par un cyberchancelier du cyberparlement
+
+    ``initiatives_a_venir``
+        Initiatives validées dont le scrutin est à venir du cyberparlement
+
+    ``need_vote_validation``
+        Nombre de votes en attente de validation par l'utilisateur du cyberparlement
+
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_liste.html'
+    """
     model = Initiative
-    context_object_name = 'initiatives'
     template_name = 'cyberparlementInitiatives/initiatives/initiative_liste.html'
 
     def get_cyberparlement(self):
@@ -52,10 +106,27 @@ class InitiativeListView(TemplateView):
         context['initiatives_a_valider'] = self.get_initiatives_a_valider()
         context['initiatives_a_venir'] = self.get_initiatives_a_venir()
         context['need_vote_validation'] = self.get_initiatives_en_cours().filter(Q(need_validation=1)).count()
+        context['title'] = 'Liste des initiatives'
+        context['description'] = f'Les des initiatives pour le cyberparlement {self.get_cyberparlement().nom}'
         return context
 
 
 class InitiativePropositionView(FormView):
+    """
+    Vue de proposition d'initiative.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_proposition.html'
+    """
+
     form_class = InitiativePropositionForm
     template_name = 'cyberparlementInitiatives/initiatives/initiative_proposition.html'
     success_url = reverse_lazy('index')
@@ -87,8 +158,35 @@ class InitiativePropositionView(FormView):
 
         return redirect(self.get_success_url())
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Proposer une initiative'
+        context['description'] = 'Proposer une initiative'
+        return context
+
 
 class InitiativeValidationView(FormView):
+    """
+    Vue de validation d'une initiative par un cyberchancelier.
+
+    **Contexte**
+
+    ``title``
+       Titre de la page
+
+    ``description``
+       Description de la page
+
+    ``form``
+       Formulaire de validation
+
+    ``choix``
+       Choix de réponse de l'initiative à valider
+
+    **Template**
+    ``cyberparlementInitiatives/initiatives/initiative_validation.html``
+    """
+
     form_class = InitiativePropositionForm
     template_name = 'cyberparlementInitiatives/initiatives/initiative_validation.html'
     success_url = reverse_lazy('index')
@@ -116,7 +214,6 @@ class InitiativeValidationView(FormView):
                 cyberparlement=cyberparlement,
                 nom=self.request.POST.get('nom'),
                 description=self.request.POST.get('description'),
-                initiateur=self.request.user,
             )
             initiative.save()
 
@@ -140,12 +237,32 @@ class InitiativeValidationView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Valider une initiative'
+        context['description'] = 'Valider une initiative'
         context['form'] = self.form_class(instance=self.get_initiative())
         context['choix'] = self.get_choix_initiative()
         return context
 
 
 class InitiativeCreateSecondRoundView(FormView):
+    """
+    Vue de permettant de créer un nouveau tour.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    ``initiative``
+        Initiative pour laquelle il faut créer un nouveau tour
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_create_second_round.html'
+    """
+
     form_class = InitiativeStartPollForm
     template_name = 'cyberparlementInitiatives/initiatives/initiative_create_second_round.html'
 
@@ -159,6 +276,8 @@ class InitiativeCreateSecondRoundView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Organiser un nouveau tour'
+        context['description'] = 'Organiser un nouveau tour'
         context['initiative'] = self.get_placeholder_initiative()
         return context
 
@@ -190,6 +309,24 @@ class InitiativeCreateSecondRoundView(FormView):
 
 
 class InitiativeStartPollView(FormView):
+    """
+    Vue de permettant d'organiser un scrutin.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    ``initiative``
+        Initiative pour laquelle on organise un scrutin
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_start_poll.html'
+    """
+
     form_class = InitiativeStartPollForm
     template_name = 'cyberparlementInitiatives/initiatives/initiative_start_poll.html'
 
@@ -212,11 +349,30 @@ class InitiativeStartPollView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Organiser un scrutin'
+        context['description'] = 'Organiser un scrutin'
         context['initiative'] = self.get_initiative()
         return context
 
 
 class InitiativePollVoteView(DetailView):
+    """
+    Vue de permettant de voter durant un scrutin.
+
+    **Contexte**
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    ``choix``
+        Choix de l'initiative pour laquelle on organise un scrutin
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_start_poll.html'
+    """
+
     template_name = 'cyberparlementInitiatives/initiatives/initiative_vote_poll.html'
     model = Initiative
     context_object_name = 'initiative'
@@ -247,21 +403,58 @@ class InitiativePollVoteView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Voter'
+        context['description'] = f'Voter sur {self.get_object().nom}'
         context['choix'] = self.get_choix_initiative()
         return context
 
 
 class InitiativePollDetailView(DetailView):
+    """
+    Vue des résultats d'un scrutin.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_poll_detail.html'
+    """
+
     template_name = 'cyberparlementInitiatives/initiatives/initiative_poll_detail.html'
     model = Initiative
     context_object_name = 'initiative'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Résultats'
+        context['description'] = f'Résultats du scrutin pour {self.get_object().nom}'
         return context
 
 
 class InitiativeValidatePollVoteView(DetailView):
+    """
+    Vue de validation d'un vote.
+
+    **Contexte**
+
+    ``title``
+        Titre de la page
+
+    ``description``
+        Description de la page
+
+    ``validation_text``
+        Texte d'information concernant la validation
+
+    **Template**
+    :template:'cyberparlementInitiatives/initiatives/initiative_validate_poll_vote.html'
+    """
+
     model = Initiative
     template_name = 'cyberparlementInitiatives/initiatives/initiative_validate_poll_vote.html'
     context_object_name = 'initiative'
@@ -276,6 +469,8 @@ class InitiativeValidatePollVoteView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['title'] = 'Valider un vote'
+        context['description'] = 'Valider un vote'
         context['validation_text'] = self.get_validation_text()
         return context
 
@@ -322,6 +517,12 @@ class UserCreateView(CreateView):
     form_class = UserCreationForm
     template_name = 'cyberparlementInitiatives/auth/create_user.html'
     success_url = reverse_lazy('index')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Koolapic'
+        context['description'] = 'Créer une activité sur Koolapic'
+        return context
 
 
 class UserLoginView(TemplateView):
