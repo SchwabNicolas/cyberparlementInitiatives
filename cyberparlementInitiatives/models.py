@@ -38,8 +38,13 @@ class Cyberparlement(models.Model):
     cpparent = models.ForeignKey('self', models.DO_NOTHING, db_column='CPParent', blank=True, null=True)  # Field name made lowercase.
 
     # Important !
-    # Champs ajoutés afin de faire fonctionner le projet de TPI. Absent dans le projet final et remplacé par une méthode.
+    # Champ ajouté afin de faire fonctionner le projet de TPI. Absent dans le projet final et à remplacer par une propriété.
     cyberchanceliers = models.ManyToManyField('Personne', verbose_name="Cyberchanceliers", related_name='cyberchanceliers', related_query_name='cyberchancelier')
+
+    # Compléter cette méthode afin de retourner les cyberchanceliers (Personne) du cyberparlement donné
+    # @property
+    # def cyberchanceliers(self):
+    #    pass
 
     class Meta:
         managed = True

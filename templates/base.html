@@ -66,6 +66,10 @@
 <main role="main" class="flex-shrink-0">
     <div class="container pt-3 mb-5">
         {% block content %}{% endblock %}
+        {% comment %}
+        {# Système de messagerie. Fonctionne mais nécessiterait de la stylisation supplémentaire pour le rendre utilisable. #}
+        {% include 'cyberparlementInitiatives/includes/messages_include.html' %}
+        {% endcomment %}
     </div>
 </main>
 </body>

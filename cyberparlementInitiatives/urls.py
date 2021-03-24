@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.urls import path, include
 
 from cyberparlementInitiatives.views import IndexView, InitiativeListView, InitiativePropositionView, UserCreateView, CyberparlementListView, UserLoginView, InitiativeValidationView, InitiativeStartPollView, InitiativePollVoteView, InitiativeValidatePollVoteView, InitiativePollDetailView, InitiativeCreateSecondRoundView
@@ -24,14 +25,14 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('index/', IndexView.as_view(), name='index'),
 
-    path('initiatives/<int:id_cyberparlement>', InitiativeListView.as_view(), name='initiative-list'),
-    path('initiative/propose/', InitiativePropositionView.as_view(), name='initiative-propose'),
-    path('initiative/validate/<int:id_initiative>', InitiativeValidationView.as_view(), name='initiative-validate'),
-    path('initiative/start-poll/<int:id_initiative>', InitiativeStartPollView.as_view(), name='initiative-start-poll'),
-    path('initiative/vote-poll/<int:pk>', InitiativePollVoteView.as_view(), name='initiative-vote-poll'),
-    path('initiative/poll-detail/<int:pk>', InitiativePollDetailView.as_view(), name='initiative-poll-detail'),
-    path('initiative/poll-new-round/<int:id_initiative>', InitiativeCreateSecondRoundView.as_view(), name='initiative-create-new-round'),
-    path('initiative/validate-poll-vote/<int:pk>', InitiativeValidatePollVoteView.as_view(), name='initiative-validate-poll-vote'),
+    path('initiatives/<int:id_cyberparlement>', login_required(InitiativeListView.as_view()), name='initiative-list'),
+    path('initiative/propose/', login_required(InitiativePropositionView.as_view()), name='initiative-propose'),
+    path('initiative/validate/<int:id_initiative>', login_required(InitiativeValidationView.as_view()), name='initiative-validate'),
+    path('initiative/start-poll/<int:id_initiative>', login_required(InitiativeStartPollView.as_view()), name='initiative-start-poll'),
+    path('initiative/vote-poll/<int:pk>', login_required(InitiativePollVoteView.as_view()), name='initiative-vote-poll'),
+    path('initiative/poll-detail/<int:pk>', login_required(InitiativePollDetailView.as_view()), name='initiative-poll-detail'),
+    path('initiative/poll-new-round/<int:id_initiative>', login_required(InitiativeCreateSecondRoundView.as_view()), name='initiative-create-new-round'),
+    path('initiative/validate-poll-vote/<int:pk>', login_required(InitiativeValidatePollVoteView.as_view()), name='initiative-validate-poll-vote'),
 
     # Vues relatives à l'authentification -- à des fins de test
     path('user/create/', UserCreateView.as_view(), name='user-create'),

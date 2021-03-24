@@ -154,3 +154,6 @@ Q_CLUSTER = {
     'bulk': 10,
     'orm': 'default'
 }
+
+LOGIN_REDIRECT_URL = '/login/'
+LOGIN_URL = '/login/'

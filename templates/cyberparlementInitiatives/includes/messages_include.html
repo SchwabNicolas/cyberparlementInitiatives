@@ -1,0 +1,60 @@
+{% comment %}
+    Description : snippet permettant de créer des alertes avec le système de messages de Django.
+    Dépendances : aucune
+{% endcomment %}
+
+<div id="messages">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-dismissable alert-danger show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Erreur :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-dismissable alert-warning show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Avertissement :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-dismissable alert-success show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Succès :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-dismissable alert-info show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Information :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.DEBUG %}
+                <div class="alert alert-dismissable alert-dark show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Message de débogage :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% else %}
+                <div class="alert alert-dismissable alert-light show {{ message.tags }}" role="alert">
+                    <div class="sr-only">Message de sévérité inconnue :</div>
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
