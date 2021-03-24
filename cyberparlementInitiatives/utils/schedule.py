@@ -26,7 +26,8 @@ def schedule_poll_start(initiative_id):
     debut_scrutin = initiative.debut_scrutin
     name = f'start-poll-{initiative_id}'
 
-    Schedule.objects.filter(name=name).delete()
+    if initiative.debut_scrutin is not None:
+        Schedule.objects.filter(name=name).delete()
 
     if initiative.parent:
         initiative.parent.statut = Initiative.STATUT_SECOND_TOUR
@@ -52,7 +53,8 @@ def schedule_poll_end(initiative_id):
     fin_scrutin = initiative.fin_scrutin
     name = f'end-poll-{initiative_id}'
 
-    Schedule.objects.filter(name=name).delete()
+    if initiative.debut_scrutin is not None:
+        Schedule.objects.filter(name=name).delete()
 
     schedule(
         'cyberparlementInitiatives.utils.schedule.close_poll',
